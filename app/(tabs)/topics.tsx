@@ -38,6 +38,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    paddingTop: 50, // Add padding to lower the content
   },
   title: {
     fontSize: 24,

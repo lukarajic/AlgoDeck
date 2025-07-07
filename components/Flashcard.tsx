@@ -2,7 +2,6 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 
 interface FlashcardProps {
   title: string;
@@ -43,14 +42,17 @@ const Flashcard = ({ title, description, solution }: FlashcardProps) => {
   };
 
   return (
-    <TouchableOpacity onPress={flipCard} activeOpacity={0.8}>
-      <View>
+    <TouchableOpacity onPress={flipCard} activeOpacity={1}>
+      <View style={styles.cardContainer}>
         <Animated.View style={[styles.card, styles.cardFront, frontAnimatedStyle]}>
           <ThemedText style={styles.title}>{title}</ThemedText>
           <ThemedText style={styles.description}>{description}</ThemedText>
         </Animated.View>
         <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle]}>
           <ThemedText style={styles.solution}>{solution}</ThemedText>
+          <TouchableOpacity onPress={flipCard} style={styles.flipButton}>
+            <ThemedText style={styles.flipButtonText}>View Problem</ThemedText>
+          </TouchableOpacity>
         </Animated.View>
       </View>
     </TouchableOpacity>
@@ -58,27 +60,37 @@ const Flashcard = ({ title, description, solution }: FlashcardProps) => {
 };
 
 const styles = StyleSheet.create({
+  cardContainer: {
+    width: 320,
+    height: 420,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
   card: {
-    width: 300,
-    height: 400,
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
     backfaceVisibility: 'hidden',
-    borderRadius: 10,
+    borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#ddd',
   },
   cardFront: {
     backgroundColor: '#fff',
   },
   cardBack: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#f8f8f8',
     position: 'absolute',
     top: 0,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 15,
     textAlign: 'center',
@@ -86,11 +98,24 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 18,
     textAlign: 'center',
+    lineHeight: 24,
   },
   solution: {
     fontSize: 16,
-    fontStyle: 'italic',
     textAlign: 'center',
+    lineHeight: 22,
+  },
+  flipButton: {
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#007AFF',
+    borderRadius: 25,
+  },
+  flipButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
