@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import Swiper from 'react-native-deck-swiper';
-import problems from '../../data/problems.json';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import Swiper from 'react-native-deck-swiper';
 import Flashcard from '../../components/Flashcard';
-import { useTopic } from '../../context/TopicContext';
 import { usePerformance } from '../../context/PerformanceContext';
+import { useTopic } from '../../context/TopicContext';
+import problems from '../../data/problems.json';
 
 const PracticeScreen = () => {
   const { selectedTopic, setSelectedTopic } = useTopic();
@@ -89,6 +89,9 @@ const PracticeScreen = () => {
     const weakestTopic = findWeakestTopic();
     if (weakestTopic) {
       setSelectedTopic(weakestTopic);
+      Alert.alert('Topic Switched', `Now practicing: ${weakestTopic}`);
+    } else {
+      Alert.alert('No Weakest Topic Found', 'Keep practicing to identify areas for improvement!');
     }
   };
 
@@ -116,6 +119,7 @@ const PracticeScreen = () => {
 
   return (
     <ThemedView style={styles.container}>
+      <ThemedText style={styles.topicText}>Topic: {selectedTopic}</ThemedText>
       <View style={styles.swiperContainer}>
         <Swiper
           ref={swiperRef}
@@ -148,13 +152,17 @@ const PracticeScreen = () => {
       <View style={styles.buttonsContainer}>
         <TouchableOpacity
           style={[styles.button, styles.incorrectButton]}
-          onPress={() => handleAnswer(false)}
+          onPress={() => {
+            swiperRef.current.swipeLeft();
+          }}
         >
           <ThemedText style={styles.buttonText}>Incorrect</ThemedText>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.button, styles.correctButton]}
-          onPress={() => handleAnswer(true)}
+          onPress={() => {
+            swiperRef.current.swipeRight();
+          }}
         >
           <ThemedText style={styles.buttonText}>Correct</ThemedText>
         </TouchableOpacity>
@@ -186,12 +194,20 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 40,
   },
+  topicText: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    position: 'absolute',
+    top: 80,
+  },
   buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
     position: 'absolute',
-    bottom: 100,
+    bottom: 180,
+    zIndex: 100,
   },
   button: {
     paddingVertical: 15,
@@ -224,11 +240,12 @@ const styles = StyleSheet.create({
   },
   weakestButton: {
     position: 'absolute',
-    bottom: 160,
+    bottom: 100,
     backgroundColor: '#FF9500',
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 25,
+    zIndex: 100,
   },
 });
 
