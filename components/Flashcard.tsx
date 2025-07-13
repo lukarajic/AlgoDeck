@@ -2,6 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
+import * as Haptics from 'expo-haptics';
 
 interface FlashcardProps {
   title: string;
@@ -14,6 +15,7 @@ const Flashcard = ({ title, description, solution }: FlashcardProps) => {
   const flipAnimation = useRef(new Animated.Value(0)).current;
 
   const flipCard = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const toValue = isFlipped ? 0 : 180;
     Animated.timing(flipAnimation, {
       toValue,

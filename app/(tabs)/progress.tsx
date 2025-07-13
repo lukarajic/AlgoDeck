@@ -4,6 +4,7 @@ import { usePerformance } from '../../context/PerformanceContext';
 import problems from '../../data/problems.json';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import ProgressBar from '../../components/ui/ProgressBar';
 
 export default function ProgressScreen() {
   const { performanceData, updatePerformance } = usePerformance();
@@ -59,7 +60,7 @@ export default function ProgressScreen() {
       <ThemedText style={styles.topicName}>{item.topic}</ThemedText>
       <ThemedText>Correct: {item.correct}</ThemedText>
       <ThemedText>Incorrect: {item.incorrect}</ThemedText>
-      <ThemedText>Accuracy: {item.accuracy.toFixed(2)}%</ThemedText>
+      <ProgressBar progress={item.accuracy} />
     </View>
   );
 

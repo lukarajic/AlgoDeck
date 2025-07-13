@@ -1,5 +1,6 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import * as Haptics from 'expo-haptics';
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
@@ -153,6 +154,7 @@ const PracticeScreen = () => {
         <TouchableOpacity
           style={[styles.button, styles.incorrectButton]}
           onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             swiperRef.current.swipeLeft();
           }}
         >
@@ -161,6 +163,7 @@ const PracticeScreen = () => {
         <TouchableOpacity
           style={[styles.button, styles.correctButton]}
           onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             swiperRef.current.swipeRight();
           }}
         >
