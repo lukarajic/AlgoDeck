@@ -17,19 +17,26 @@ const PracticeScreen = () => {
   const [cardIndex, setCardIndex] = useState(0);
   const [deckFinished, setDeckFinished] = useState(false);
   const swiperRef = useRef(null);
+  const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
 
   useEffect(() => {
-    const newProblems =
-      selectedTopic === 'All'
-        ? problems
-        : problems.filter((p) => p.category === selectedTopic);
+    let newProblems = problems;
+
+    if (selectedTopic !== 'All') {
+      newProblems = newProblems.filter((p) => p.category === selectedTopic);
+    }
+
+    if (selectedDifficulties.length > 0) {
+      newProblems = newProblems.filter((p) => selectedDifficulties.includes(p.difficulty));
+    }
+
     setFilteredProblems(newProblems);
     setCardIndex(0);
     setDeckFinished(false);
     if (swiperRef.current) {
       swiperRef.current.jumpToCardIndex(0);
     }
-  }, [selectedTopic]);
+  }, [selectedTopic, selectedDifficulties]);
 
   useEffect(() => {
     if (filteredProblems.length > 0 && cardIndex >= filteredProblems.length) {
@@ -96,6 +103,17 @@ const PracticeScreen = () => {
     }
   };
 
+  const toggleDifficulty = (difficulty) => {
+    setSelectedDifficulties((prev) =>
+      prev.includes(difficulty) ? prev.filter((d) => d !== difficulty) : [...prev, difficulty]
+    );
+  };
+
+  const handleClearFilters = () => {
+    setSelectedTopic('All');
+    setSelectedDifficulties([]);
+  };
+
   if (deckFinished) {
     return (
       <ThemedView style={styles.container}>
@@ -107,46 +125,68 @@ const PracticeScreen = () => {
     );
   }
 
-  if (filteredProblems.length === 0) {
-    return (
-      <ThemedView style={styles.container}>
-        <ThemedText>No problems found for this topic.</ThemedText>
-        <TouchableOpacity style={styles.weakestButton} onPress={handlePracticeWeakest}>
-          <ThemedText style={styles.buttonText}>Practice Weakest Topic</ThemedText>
-        </TouchableOpacity>
-      </ThemedView>
-    );
-  }
-
   return (
     <ThemedView style={styles.container}>
-      <ThemedText style={styles.topicText}>Topic: {selectedTopic}</ThemedText>
-      <View style={styles.swiperContainer}>
-        <Swiper
-          ref={swiperRef}
-          cards={filteredProblems}
-          renderCard={(card) =>
-            card ? (
-              <Flashcard
-                key={card.id}
-                title={card.title}
-                description={card.description}
-                solution={card.solution}
-              />
-            ) : null
-          }
-          onSwipedLeft={() => handleAnswer(false)}
-          onSwipedRight={() => handleAnswer(true)}
-          onSwipedAll={() => setDeckFinished(true)}
-          cardIndex={cardIndex}
-          backgroundColor={'transparent'}
-          stackSize={3}
-          stackSeparation={15}
-          animateCardOpacity
-          verticalSwipe={false}
-          key={selectedTopic}
-        />
+      <View style={styles.difficultyContainer}>
+        {['Easy', 'Medium', 'Hard'].map((difficulty) => (
+          <TouchableOpacity
+            key={difficulty}
+            style={[
+              styles.difficultyButton,
+              selectedDifficulties.includes(difficulty) && styles.difficultyButtonSelected,
+            ]}
+            onPress={() => toggleDifficulty(difficulty)}
+          >
+            <ThemedText
+              style={[
+                styles.difficultyButtonText,
+                selectedDifficulties.includes(difficulty) && styles.difficultyButtonTextSelected,
+              ]}
+            >
+              {difficulty}
+            </ThemedText>
+          </TouchableOpacity>
+        ))}
       </View>
+      <ThemedText style={styles.topicText}>Topic: {selectedTopic}</ThemedText>
+      {filteredProblems.length === 0 ? (
+        <ThemedView style={styles.noProblemsContainer}>
+          <ThemedText style={styles.noProblemsText}>
+            No problems found for this topic and difficulty.
+          </ThemedText>
+          <TouchableOpacity style={styles.clearButton} onPress={handleClearFilters}>
+            <ThemedText style={styles.clearButtonText}>Clear Filters</ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
+      ) : (
+        <View style={styles.swiperContainer}>
+          <Swiper
+            ref={swiperRef}
+            cards={filteredProblems}
+            renderCard={(card) =>
+              card ? (
+                <Flashcard
+                  key={card.id}
+                  title={card.title}
+                  description={card.description}
+                  solution={card.solution}
+                  difficulty={card.difficulty}
+                />
+              ) : null
+            }
+            onSwipedLeft={() => handleAnswer(false)}
+            onSwipedRight={() => handleAnswer(true)}
+            onSwipedAll={() => setDeckFinished(true)}
+            cardIndex={cardIndex}
+            backgroundColor={'transparent'}
+            stackSize={3}
+            stackSeparation={15}
+            animateCardOpacity
+            verticalSwipe={false}
+            key={`${selectedTopic}-${selectedDifficulties.join('-')}`}
+          />
+        </View>
+      )}
       <ThemedText style={styles.counter}>
         Card {Math.min(cardIndex + 1, filteredProblems.length)} of {filteredProblems.length}
       </ThemedText>
@@ -187,7 +227,7 @@ const styles = StyleSheet.create({
   swiperContainer: {
     flex: 1,
     width: '100%',
-    marginTop: 50,
+    marginTop: 120,
     alignItems: 'center',
   },
   counter: {
@@ -202,14 +242,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
     position: 'absolute',
-    top: 80,
+    top: 160,
   },
   buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
     position: 'absolute',
-    bottom: 180,
+    bottom: 150,
     zIndex: 100,
   },
   button: {
@@ -243,12 +283,57 @@ const styles = StyleSheet.create({
   },
   weakestButton: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 90,
     backgroundColor: '#FF9500',
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 25,
     zIndex: 100,
+  },
+  difficultyContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    position: 'absolute',
+    top: 80,
+  },
+  difficultyButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#007AFF',
+    marginHorizontal: 5,
+  },
+  difficultyButtonSelected: {
+    backgroundColor: '#007AFF',
+  },
+  difficultyButtonText: {
+    color: '#007AFF',
+    fontSize: 14,
+  },
+  difficultyButtonTextSelected: {
+    color: '#fff',
+  },
+  noProblemsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noProblemsText: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  clearButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 25,
+  },
+  clearButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

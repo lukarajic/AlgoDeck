@@ -1,6 +1,6 @@
 
-import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import * as Haptics from 'expo-haptics';
 
@@ -8,9 +8,10 @@ interface FlashcardProps {
   title: string;
   description: string;
   solution: string;
+  difficulty: string;
 }
 
-const Flashcard = ({ title, description, solution }: FlashcardProps) => {
+const Flashcard = ({ title, description, solution, difficulty }: FlashcardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const flipAnimation = useRef(new Animated.Value(0)).current;
 
@@ -43,12 +44,28 @@ const Flashcard = ({ title, description, solution }: FlashcardProps) => {
     transform: [{ rotateY: backInterpolate }],
   };
 
+  const getDifficultyStyle = (level) => {
+    switch (level) {
+      case 'Easy':
+        return styles.easyBadge;
+      case 'Medium':
+        return styles.mediumBadge;
+      case 'Hard':
+        return styles.hardBadge;
+      default:
+        return {};
+    }
+  };
+
   return (
     <TouchableOpacity onPress={flipCard} activeOpacity={1}>
       <View style={styles.cardContainer}>
         <Animated.View style={[styles.card, styles.cardFront, frontAnimatedStyle]}>
           <ThemedText style={styles.title}>{title}</ThemedText>
           <ThemedText style={styles.description}>{description}</ThemedText>
+          <View style={[styles.badge, getDifficultyStyle(difficulty)]}>
+            <ThemedText style={styles.badgeText}>{difficulty}</ThemedText>
+          </View>
         </Animated.View>
         <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle]}>
           <ThemedText style={styles.solution}>{solution}</ThemedText>
@@ -101,6 +118,26 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     lineHeight: 24,
+  },
+  badge: {
+    marginTop: 15,
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    borderRadius: 15,
+  },
+  easyBadge: {
+    backgroundColor: '#4CAF50', // Green
+  },
+  mediumBadge: {
+    backgroundColor: '#FFC107', // Amber
+  },
+  hardBadge: {
+    backgroundColor: '#F44336', // Red
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   solution: {
     fontSize: 16,
