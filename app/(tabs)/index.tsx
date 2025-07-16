@@ -2,7 +2,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import * as Haptics from 'expo-haptics';
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import Flashcard from '../../components/Flashcard';
 import { usePerformance } from '../../context/PerformanceContext';
@@ -18,6 +18,7 @@ const PracticeScreen = () => {
   const [deckFinished, setDeckFinished] = useState(false);
   const swiperRef = useRef(null);
   const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     let newProblems = problems;
@@ -30,13 +31,19 @@ const PracticeScreen = () => {
       newProblems = newProblems.filter((p) => selectedDifficulties.includes(p.difficulty));
     }
 
+    if (searchQuery) {
+      newProblems = newProblems.filter((p) =>
+        p.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
     setFilteredProblems(newProblems);
     setCardIndex(0);
     setDeckFinished(false);
     if (swiperRef.current) {
       swiperRef.current.jumpToCardIndex(0);
     }
-  }, [selectedTopic, selectedDifficulties]);
+  }, [selectedTopic, selectedDifficulties, searchQuery]);
 
   useEffect(() => {
     if (filteredProblems.length > 0 && cardIndex >= filteredProblems.length) {
@@ -112,6 +119,7 @@ const PracticeScreen = () => {
   const handleClearFilters = () => {
     setSelectedTopic('All');
     setSelectedDifficulties([]);
+    setSearchQuery('');
   };
 
   if (deckFinished) {
@@ -127,6 +135,12 @@ const PracticeScreen = () => {
 
   return (
     <ThemedView style={styles.container}>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search problems..."
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      />
       <View style={styles.difficultyContainer}>
         {['Easy', 'Medium', 'Hard'].map((difficulty) => (
           <TouchableOpacity
@@ -227,22 +241,14 @@ const styles = StyleSheet.create({
   swiperContainer: {
     flex: 1,
     width: '100%',
-    marginTop: 120,
+    marginTop: 130, // Adjusted for search bar and difficulty filters
     alignItems: 'center',
-  },
-  counter: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    position: 'absolute',
-    top: 40,
   },
   topicText: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 10,
     position: 'absolute',
-    top: 160,
+    top: 140, // Adjusted to be below difficulty filters
   },
   buttonsContainer: {
     flexDirection: 'row',
@@ -290,11 +296,23 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     zIndex: 100,
   },
+  searchInput: {
+    position: 'absolute',
+    top: 40,
+    width: '90%',
+    height: 40,
+    paddingHorizontal: 15,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    zIndex: 200, // Ensure it's above other elements
+  },
   difficultyContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     position: 'absolute',
-    top: 80,
+    top: 90, // Adjusted to be below the search bar
   },
   difficultyButton: {
     paddingVertical: 8,
