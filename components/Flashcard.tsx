@@ -1,19 +1,27 @@
-
+import { useFavorites } from '@/context/FavoritesContext';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useRef, useState } from 'react';
-import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import * as Haptics from 'expo-haptics';
 
 interface FlashcardProps {
+  problemId: number;
   title: string;
   description: string;
   solution: string;
   difficulty: string;
 }
 
-const Flashcard = ({ title, description, solution, difficulty }: FlashcardProps) => {
+const Flashcard = ({ problemId, title, description, solution, difficulty }: FlashcardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
+  const { isFavorite, toggleFavorite } = useFavorites();
   const flipAnimation = useRef(new Animated.Value(0)).current;
+
+  const handleToggleFavorite = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    toggleFavorite(problemId);
+  };
 
   const flipCard = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -44,7 +52,7 @@ const Flashcard = ({ title, description, solution, difficulty }: FlashcardProps)
     transform: [{ rotateY: backInterpolate }],
   };
 
-  const getDifficultyStyle = (level) => {
+  const getDifficultyStyle = (level: string) => {
     switch (level) {
       case 'Easy':
         return styles.easyBadge;
@@ -58,8 +66,8 @@ const Flashcard = ({ title, description, solution, difficulty }: FlashcardProps)
   };
 
   return (
-    <TouchableOpacity onPress={flipCard} activeOpacity={1}>
-      <View style={styles.cardContainer}>
+    <View style={styles.cardContainer}>
+      <Pressable onPress={flipCard}>
         <Animated.View style={[styles.card, styles.cardFront, frontAnimatedStyle]}>
           <ThemedText style={styles.title}>{title}</ThemedText>
           <ThemedText style={styles.description}>{description}</ThemedText>
@@ -69,12 +77,19 @@ const Flashcard = ({ title, description, solution, difficulty }: FlashcardProps)
         </Animated.View>
         <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle]}>
           <ThemedText style={styles.solution}>{solution}</ThemedText>
-          <TouchableOpacity onPress={flipCard} style={styles.flipButton}>
+          <Pressable onPress={flipCard} style={styles.flipButton}>
             <ThemedText style={styles.flipButtonText}>View Problem</ThemedText>
-          </TouchableOpacity>
+          </Pressable>
         </Animated.View>
-      </View>
-    </TouchableOpacity>
+      </Pressable>
+      <Pressable onPress={handleToggleFavorite} style={styles.favoriteButton}>
+        <Ionicons
+          name={isFavorite(problemId) ? 'star' : 'star-outline'}
+          size={28}
+          color={isFavorite(problemId) ? '#FFD700' : '#ccc'}
+        />
+      </Pressable>
+    </View>
   );
 };
 
@@ -155,6 +170,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  favoriteButton: {
+    position: 'absolute',
+    top: 15,
+    right: 15,
+    zIndex: 100, // Ensure it's on top
+    padding: 10, // Increase touchable area
   },
 });
 

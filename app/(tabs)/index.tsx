@@ -1,6 +1,8 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { useFavorites } from '@/context/FavoritesContext';
 import * as Haptics from 'expo-haptics';
+import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
@@ -11,24 +13,32 @@ import problems from '../../data/problems.json';
 
 const PracticeScreen = () => {
   const { selectedTopic, setSelectedTopic } = useTopic();
-  const { performanceData } = usePerformance();
-  const { updatePerformance } = usePerformance();
+  const { performanceData, updatePerformance } = usePerformance();
+  const { favorites } = useFavorites();
   const [filteredProblems, setFilteredProblems] = useState([]);
   const [cardIndex, setCardIndex] = useState(0);
   const [deckFinished, setDeckFinished] = useState(false);
   const swiperRef = useRef(null);
   const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const params = useLocalSearchParams();
+  const favoritesOnly = params.favoritesOnly === 'true';
 
   useEffect(() => {
+    const currentProblemId = filteredProblems[cardIndex]?.id;
+
     let newProblems = problems;
 
-    if (selectedTopic !== 'All') {
-      newProblems = newProblems.filter((p) => p.category === selectedTopic);
-    }
+    if (favoritesOnly) {
+      newProblems = newProblems.filter((p) => favorites.includes(p.id));
+    } else {
+      if (selectedTopic !== 'All') {
+        newProblems = newProblems.filter((p) => p.category === selectedTopic);
+      }
 
-    if (selectedDifficulties.length > 0) {
-      newProblems = newProblems.filter((p) => selectedDifficulties.includes(p.difficulty));
+      if (selectedDifficulties.length > 0) {
+        newProblems = newProblems.filter((p) => selectedDifficulties.includes(p.difficulty));
+      }
     }
 
     if (searchQuery) {
@@ -38,12 +48,22 @@ const PracticeScreen = () => {
     }
 
     setFilteredProblems(newProblems);
-    setCardIndex(0);
+
+    let newIndex = 0;
+    if (params.problemId) {
+      newIndex = newProblems.findIndex((p) => p.id === parseInt(params.problemId as string, 10));
+      if (newIndex === -1) newIndex = 0;
+    } else if (currentProblemId) {
+      newIndex = newProblems.findIndex((p) => p.id === currentProblemId);
+      if (newIndex === -1) newIndex = 0; // If current problem is no longer in filtered list, go to first card
+    }
+
+    setCardIndex(newIndex);
     setDeckFinished(false);
     if (swiperRef.current) {
-      swiperRef.current.jumpToCardIndex(0);
+      swiperRef.current.jumpToCardIndex(newIndex);
     }
-  }, [selectedTopic, selectedDifficulties, searchQuery]);
+  }, [selectedTopic, selectedDifficulties, searchQuery, params.problemId, favoritesOnly, favorites.length]);
 
   useEffect(() => {
     if (filteredProblems.length > 0 && cardIndex >= filteredProblems.length) {
@@ -51,7 +71,7 @@ const PracticeScreen = () => {
     }
   }, [cardIndex, filteredProblems.length]);
 
-  const handleAnswer = (isCorrect) => {
+  const handleAnswer = (isCorrect: boolean) => {
     if (cardIndex >= filteredProblems.length) {
       return;
     }
@@ -69,7 +89,7 @@ const PracticeScreen = () => {
   };
 
   const findWeakestTopic = () => {
-    const topicStats = {};
+    const topicStats: { [key: string]: { correct: number; incorrect: number; total: number } } = {};
     for (const problem of problems) {
       const category = problem.category;
       if (!topicStats[category]) {
@@ -84,7 +104,7 @@ const PracticeScreen = () => {
     }
 
     let weakestTopic = null;
-    let lowestAccuracy = 101; // Start with a value higher than 100
+    let lowestAccuracy = 101;
 
     for (const topic in topicStats) {
       const stats = topicStats[topic];
@@ -110,7 +130,7 @@ const PracticeScreen = () => {
     }
   };
 
-  const toggleDifficulty = (difficulty) => {
+  const toggleDifficulty = (difficulty: string) => {
     setSelectedDifficulties((prev) =>
       prev.includes(difficulty) ? prev.filter((d) => d !== difficulty) : [...prev, difficulty]
     );
@@ -140,6 +160,7 @@ const PracticeScreen = () => {
         placeholder="Search problems..."
         value={searchQuery}
         onChangeText={setSearchQuery}
+        editable={!favoritesOnly}
       />
       <View style={styles.difficultyContainer}>
         {['Easy', 'Medium', 'Hard'].map((difficulty) => (
@@ -148,13 +169,16 @@ const PracticeScreen = () => {
             style={[
               styles.difficultyButton,
               selectedDifficulties.includes(difficulty) && styles.difficultyButtonSelected,
+              favoritesOnly && styles.disabledButton,
             ]}
             onPress={() => toggleDifficulty(difficulty)}
+            disabled={favoritesOnly}
           >
             <ThemedText
               style={[
                 styles.difficultyButtonText,
                 selectedDifficulties.includes(difficulty) && styles.difficultyButtonTextSelected,
+                favoritesOnly && styles.disabledButtonText,
               ]}
             >
               {difficulty}
@@ -162,7 +186,9 @@ const PracticeScreen = () => {
           </TouchableOpacity>
         ))}
       </View>
-      <ThemedText style={styles.topicText}>Topic: {selectedTopic}</ThemedText>
+      <ThemedText style={styles.topicText}>
+        {favoritesOnly ? 'Favorites' : `Topic: ${selectedTopic}`}
+      </ThemedText>
       {filteredProblems.length === 0 ? (
         <ThemedView style={styles.noProblemsContainer}>
           <ThemedText style={styles.noProblemsText}>
@@ -181,6 +207,7 @@ const PracticeScreen = () => {
               card ? (
                 <Flashcard
                   key={card.id}
+                  problemId={card.id}
                   title={card.title}
                   description={card.description}
                   solution={card.solution}
@@ -197,7 +224,7 @@ const PracticeScreen = () => {
             stackSeparation={15}
             animateCardOpacity
             verticalSwipe={false}
-            key={`${selectedTopic}-${selectedDifficulties.join('-')}`}
+            key={`${selectedTopic}-${selectedDifficulties.join('-')}-${favoritesOnly}-${favorites.length}`}
           />
         </View>
       )}
@@ -209,7 +236,7 @@ const PracticeScreen = () => {
           style={[styles.button, styles.incorrectButton]}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            swiperRef.current.swipeLeft();
+            swiperRef.current?.swipeLeft();
           }}
         >
           <ThemedText style={styles.buttonText}>Incorrect</ThemedText>
@@ -218,14 +245,20 @@ const PracticeScreen = () => {
           style={[styles.button, styles.correctButton]}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            swiperRef.current.swipeRight();
+            swiperRef.current?.swipeRight();
           }}
         >
           <ThemedText style={styles.buttonText}>Correct</ThemedText>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.weakestButton} onPress={handlePracticeWeakest}>
-        <ThemedText style={styles.buttonText}>Practice Weakest Topic</ThemedText>
+      <TouchableOpacity
+        style={[styles.weakestButton, favoritesOnly && styles.disabledButton]}
+        onPress={handlePracticeWeakest}
+        disabled={favoritesOnly}
+      >
+        <ThemedText style={[styles.buttonText, favoritesOnly && styles.disabledButtonText]}>
+          Practice Weakest Topic
+        </ThemedText>
       </TouchableOpacity>
     </ThemedView>
   );
@@ -241,14 +274,14 @@ const styles = StyleSheet.create({
   swiperContainer: {
     flex: 1,
     width: '100%',
-    marginTop: 130, // Adjusted for search bar and difficulty filters
+    marginTop: 100,
     alignItems: 'center',
   },
   topicText: {
     fontSize: 22,
     fontWeight: 'bold',
     position: 'absolute',
-    top: 140, // Adjusted to be below difficulty filters
+    top: 140,
   },
   buttonsContainer: {
     flexDirection: 'row',
@@ -306,13 +339,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#ddd',
-    zIndex: 200, // Ensure it's above other elements
+    zIndex: 200,
   },
   difficultyContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     position: 'absolute',
-    top: 90, // Adjusted to be below the search bar
+    top: 90,
   },
   difficultyButton: {
     paddingVertical: 8,
@@ -352,6 +385,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  counter: {
+    position: 'absolute',
+    bottom: 220,
+    fontSize: 16,
+    color: '#666',
   },
 });
 

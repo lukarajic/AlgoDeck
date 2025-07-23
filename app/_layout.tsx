@@ -1,5 +1,6 @@
-import { PerformanceProvider } from '../context/PerformanceContext';
-import { TopicProvider } from '../context/TopicContext';
+import { FavoritesProvider } from '@/context/FavoritesContext';
+import { PerformanceProvider } from '@/context/PerformanceContext';
+import { TopicProvider } from '@/context/TopicContext';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
@@ -39,17 +40,19 @@ export default function RootLayout() {
   }
 
   return (
-    <PerformanceProvider>
-      <TopicProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </TopicProvider>
-    </PerformanceProvider>
+    <FavoritesProvider>
+      <PerformanceProvider>
+        <TopicProvider>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+            <StatusBar style="auto" />
+          </ThemeProvider>
+        </TopicProvider>
+      </PerformanceProvider>
+    </FavoritesProvider>
   );
 }
