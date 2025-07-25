@@ -10,6 +10,8 @@ import Flashcard from '../../components/Flashcard';
 import { usePerformance } from '../../context/PerformanceContext';
 import { useTopic } from '../../context/TopicContext';
 import problems from '../../data/problems.json';
+import { useTheme } from '@/context/ThemeContext';
+import { Colors } from '@/constants/Colors';
 
 const PracticeScreen = () => {
   const { selectedTopic, setSelectedTopic } = useTopic();
@@ -23,6 +25,7 @@ const PracticeScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const params = useLocalSearchParams();
   const favoritesOnly = params.favoritesOnly === 'true';
+  const { colorScheme } = useTheme();
 
   useEffect(() => {
     const currentProblemId = filteredProblems[cardIndex]?.id;
@@ -156,8 +159,16 @@ const PracticeScreen = () => {
   return (
     <ThemedView style={styles.container}>
       <TextInput
-        style={styles.searchInput}
+        style={[
+          styles.searchInput,
+          { 
+            backgroundColor: Colors[colorScheme].background,
+            borderColor: Colors[colorScheme].icon,
+            color: Colors[colorScheme].text, // Set text color based on theme
+          },
+        ]}
         placeholder="Search problems..."
+        placeholderTextColor={Colors[colorScheme].icon}
         value={searchQuery}
         onChangeText={setSearchQuery}
         editable={!favoritesOnly}
@@ -335,10 +346,8 @@ const styles = StyleSheet.create({
     width: '90%',
     height: 40,
     paddingHorizontal: 15,
-    backgroundColor: '#fff',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#ddd',
     zIndex: 200,
   },
   difficultyContainer: {

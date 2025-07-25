@@ -4,6 +4,8 @@ import React, { useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import * as Haptics from 'expo-haptics';
+import { useTheme } from '@/context/ThemeContext';
+import { Colors } from '@/constants/Colors';
 
 interface FlashcardProps {
   problemId: number;
@@ -16,6 +18,7 @@ interface FlashcardProps {
 const Flashcard = ({ problemId, title, description, solution, difficulty }: FlashcardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { colorScheme } = useTheme();
   const flipAnimation = useRef(new Animated.Value(0)).current;
 
   const handleToggleFavorite = () => {
@@ -68,14 +71,24 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
   return (
     <View style={styles.cardContainer}>
       <Pressable onPress={flipCard}>
-        <Animated.View style={[styles.card, styles.cardFront, frontAnimatedStyle]}>
+        <Animated.View style={[
+          styles.card,
+          { backgroundColor: Colors[colorScheme].background, borderColor: Colors[colorScheme].icon },
+          styles.cardFront,
+          frontAnimatedStyle,
+        ]}>
           <ThemedText style={styles.title}>{title}</ThemedText>
           <ThemedText style={styles.description}>{description}</ThemedText>
           <View style={[styles.badge, getDifficultyStyle(difficulty)]}>
             <ThemedText style={styles.badgeText}>{difficulty}</ThemedText>
           </View>
         </Animated.View>
-        <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle]}>
+        <Animated.View style={[
+          styles.card,
+          { backgroundColor: Colors[colorScheme].background, borderColor: Colors[colorScheme].icon },
+          styles.cardBack,
+          backAnimatedStyle,
+        ]}>
           <ThemedText style={styles.solution}>{solution}</ThemedText>
           <Pressable onPress={flipCard} style={styles.flipButton}>
             <ThemedText style={styles.flipButtonText}>View Problem</ThemedText>
@@ -113,13 +126,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#ddd',
   },
   cardFront: {
-    backgroundColor: '#fff',
   },
   cardBack: {
-    backgroundColor: '#f8f8f8',
     position: 'absolute',
     top: 0,
   },
@@ -147,7 +157,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFC107', // Amber
   },
   hardBadge: {
-    backgroundColor: '#F44336', // Red
+    backgroundColor: '#F4436', // Red
   },
   badgeText: {
     color: '#fff',
