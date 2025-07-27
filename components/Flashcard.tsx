@@ -1,11 +1,11 @@
+import { ThemedText } from '@/components/ThemedText';
+import { Colors } from '@/constants/Colors';
 import { useFavorites } from '@/context/FavoritesContext';
+import { useTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import React, { useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, View } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import * as Haptics from 'expo-haptics';
-import { useTheme } from '@/context/ThemeContext';
-import { Colors } from '@/constants/Colors';
 
 interface FlashcardProps {
   problemId: number;
@@ -13,10 +13,12 @@ interface FlashcardProps {
   description: string;
   solution: string;
   difficulty: string;
+  hint?: string;
 }
 
-const Flashcard = ({ problemId, title, description, solution, difficulty }: FlashcardProps) => {
+const Flashcard = ({ problemId, title, description, solution, difficulty, hint }: FlashcardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [showHint, setShowHint] = useState(false);
   const { isFavorite, toggleFavorite } = useFavorites();
   const { colorScheme } = useTheme();
   const flipAnimation = useRef(new Animated.Value(0)).current;
@@ -102,6 +104,17 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
           color={isFavorite(problemId) ? '#FFD700' : '#ccc'}
         />
       </Pressable>
+      {hint && !isFlipped && (
+        <View style={styles.hintContainer}>
+          {showHint ? (
+            <ThemedText style={styles.hintText}>{hint}</ThemedText>
+          ) : (
+            <Pressable onPress={() => setShowHint(true)} style={styles.hintButton}>
+              <ThemedText style={styles.hintButtonText}>Show Hint</ThemedText>
+            </Pressable>
+          )}
+        </View>
+      )}
     </View>
   );
 };
@@ -163,6 +176,34 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: 'bold',
+  },
+  hintContainer: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
+    alignItems: 'center',
+    zIndex: 200,
+  },
+  hintButton: {
+    marginTop: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: 20,
+  },
+  hintButtonText: {
+    color: '#007AFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  hintText: {
+    marginTop: 10,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    padding: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 10,
   },
   solution: {
     fontSize: 16,

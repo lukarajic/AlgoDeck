@@ -223,6 +223,7 @@ const PracticeScreen = () => {
                   description={card.description}
                   solution={card.solution}
                   difficulty={card.difficulty}
+                  hint={card.hint}
                 />
               ) : null
             }
