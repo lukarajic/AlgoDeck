@@ -15,7 +15,7 @@ import { Colors } from '@/constants/Colors';
 
 const PracticeScreen = () => {
   const { selectedTopic, setSelectedTopic } = useTopic();
-  const { performanceData, updatePerformance } = usePerformance();
+  const { performanceData, updatePerformance, getReviewProblems } = usePerformance();
   const { favorites } = useFavorites();
   const [filteredProblems, setFilteredProblems] = useState([]);
   const [cardIndex, setCardIndex] = useState(0);
@@ -25,6 +25,7 @@ const PracticeScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const params = useLocalSearchParams();
   const favoritesOnly = params.favoritesOnly === 'true';
+  const reviewMode = params.reviewMode === 'true';
   const { colorScheme } = useTheme();
 
   useEffect(() => {
@@ -32,7 +33,10 @@ const PracticeScreen = () => {
 
     let newProblems = problems;
 
-    if (favoritesOnly) {
+    if (reviewMode) {
+      const reviewProblemIds = getReviewProblems();
+      newProblems = newProblems.filter(p => reviewProblemIds.includes(p.id.toString()));
+    } else if (favoritesOnly) {
       newProblems = newProblems.filter((p) => favorites.includes(p.id));
     } else {
       if (selectedTopic !== 'All') {
@@ -66,7 +70,7 @@ const PracticeScreen = () => {
     if (swiperRef.current) {
       swiperRef.current.jumpToCardIndex(newIndex);
     }
-  }, [selectedTopic, selectedDifficulties, searchQuery, params.problemId, favoritesOnly, favorites.length]);
+  }, [selectedTopic, selectedDifficulties, searchQuery, params.problemId, favoritesOnly, favorites.length, reviewMode]);
 
   useEffect(() => {
     if (filteredProblems.length > 0 && cardIndex >= filteredProblems.length) {
@@ -171,7 +175,7 @@ const PracticeScreen = () => {
         placeholderTextColor={Colors[colorScheme].icon}
         value={searchQuery}
         onChangeText={setSearchQuery}
-        editable={!favoritesOnly}
+        editable={!favoritesOnly && !reviewMode}
       />
       <View style={styles.difficultyContainer}>
         {['Easy', 'Medium', 'Hard'].map((difficulty) => (
@@ -180,16 +184,16 @@ const PracticeScreen = () => {
             style={[
               styles.difficultyButton,
               selectedDifficulties.includes(difficulty) && styles.difficultyButtonSelected,
-              favoritesOnly && styles.disabledButton,
+              (favoritesOnly || reviewMode) && styles.disabledButton,
             ]}
             onPress={() => toggleDifficulty(difficulty)}
-            disabled={favoritesOnly}
+            disabled={favoritesOnly || reviewMode}
           >
             <ThemedText
               style={[
                 styles.difficultyButtonText,
                 selectedDifficulties.includes(difficulty) && styles.difficultyButtonTextSelected,
-                favoritesOnly && styles.disabledButtonText,
+                (favoritesOnly || reviewMode) && styles.disabledButtonText,
               ]}
             >
               {difficulty}
@@ -198,12 +202,12 @@ const PracticeScreen = () => {
         ))}
       </View>
       <ThemedText style={styles.topicText}>
-        {favoritesOnly ? 'Favorites' : `Topic: ${selectedTopic}`}
+        {reviewMode ? 'Reviewing Due Cards' : favoritesOnly ? 'Favorites' : `Topic: ${selectedTopic}`}
       </ThemedText>
       {filteredProblems.length === 0 ? (
         <ThemedView style={styles.noProblemsContainer}>
           <ThemedText style={styles.noProblemsText}>
-            No problems found for this topic and difficulty.
+            {reviewMode ? 'No problems due for review today!' : 'No problems found for this topic and difficulty.'}
           </ThemedText>
           <TouchableOpacity style={styles.clearButton} onPress={handleClearFilters}>
             <ThemedText style={styles.clearButtonText}>Clear Filters</ThemedText>
@@ -236,7 +240,7 @@ const PracticeScreen = () => {
             stackSeparation={15}
             animateCardOpacity
             verticalSwipe={false}
-            key={`${selectedTopic}-${selectedDifficulties.join('-')}-${favoritesOnly}-${favorites.length}`}
+            key={`${selectedTopic}-${selectedDifficulties.join('-')}-${favoritesOnly}-${favorites.length}-${reviewMode}`}
           />
         </View>
       )}
@@ -264,11 +268,11 @@ const PracticeScreen = () => {
         </TouchableOpacity>
       </View>
       <TouchableOpacity
-        style={[styles.weakestButton, favoritesOnly && styles.disabledButton]}
+        style={[styles.weakestButton, (favoritesOnly || reviewMode) && styles.disabledButton]}
         onPress={handlePracticeWeakest}
-        disabled={favoritesOnly}
+        disabled={favoritesOnly || reviewMode}
       >
-        <ThemedText style={[styles.buttonText, favoritesOnly && styles.disabledButtonText]}>
+        <ThemedText style={[styles.buttonText, (favoritesOnly || reviewMode) && styles.disabledButtonText]}>
           Practice Weakest Topic
         </ThemedText>
       </TouchableOpacity>
@@ -401,6 +405,12 @@ const styles = StyleSheet.create({
     bottom: 220,
     fontSize: 16,
     color: '#666',
+  },
+  disabledButton: {
+    backgroundColor: '#a9a9a9',
+  },
+  disabledButtonText: {
+    color: '#d3d3d3',
   },
 });
 

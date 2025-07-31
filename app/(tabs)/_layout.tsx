@@ -37,6 +37,18 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="review"
+        options={{
+          title: 'Review',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="calendar" color={color} />,
+        }}
+        listeners={{
+          tabPress: () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          },
+        }}
+      />
+      <Tabs.Screen
         name="favorites"
         options={{
           title: 'Favorites',
