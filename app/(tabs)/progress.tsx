@@ -7,7 +7,7 @@ import { ThemedView } from '@/components/ThemedView';
 import ProgressBar from '../../components/ui/ProgressBar';
 
 export default function ProgressScreen() {
-  const { performanceData, updatePerformance } = usePerformance();
+  const { performanceData, updatePerformance, currentStreak } = usePerformance();
 
   const getTopicStats = () => {
     const topicStats = {};
@@ -67,6 +67,7 @@ export default function ProgressScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedText style={styles.title}>Your Progress</ThemedText>
+      <ThemedText style={styles.streakText}>Current Streak: {currentStreak} days</ThemedText>
       <FlatList
         data={topicStats}
         renderItem={renderItem}
@@ -93,6 +94,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
+  },
+  streakText: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 20,
   },
   list: {
     paddingBottom: 120, // Ensure there is space for the button and tab bar

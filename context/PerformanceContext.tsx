@@ -16,12 +16,24 @@ const SRS_LEVELS = [
 
 export const PerformanceProvider = ({ children }) => {
   const [performanceData, setPerformanceData] = useState({});
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [lastPracticeDate, setLastPracticeDate] = useState<string | null>(null);
 
   useEffect(() => {
     const loadPerformanceData = async () => {
-      const storedData = await AsyncStorage.getItem('performanceData');
-      if (storedData) {
-        setPerformanceData(JSON.parse(storedData));
+      const storedPerformanceData = await AsyncStorage.getItem('performanceData');
+      if (storedPerformanceData) {
+        setPerformanceData(JSON.parse(storedPerformanceData));
+      }
+
+      const storedStreak = await AsyncStorage.getItem('currentStreak');
+      if (storedStreak) {
+        setCurrentStreak(parseInt(storedStreak, 10));
+      }
+
+      const storedLastPracticeDate = await AsyncStorage.getItem('lastPracticeDate');
+      if (storedLastPracticeDate) {
+        setLastPracticeDate(storedLastPracticeDate);
       }
     };
     loadPerformanceData();
@@ -55,6 +67,34 @@ export const PerformanceProvider = ({ children }) => {
 
     setPerformanceData(updatedData);
     await AsyncStorage.setItem('performanceData', JSON.stringify(updatedData));
+    await updateStreak();
+  };
+
+  const updateStreak = async () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let newStreak = currentStreak;
+    if (lastPracticeDate) {
+      const lastDate = new Date(lastPracticeDate);
+      lastDate.setHours(0, 0, 0, 0);
+
+      const diffTime = Math.abs(today.getTime() - lastDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 1) {
+        newStreak++;
+      } else if (diffDays > 1) {
+        newStreak = 1;
+      }
+    } else {
+      newStreak = 1;
+    }
+
+    setCurrentStreak(newStreak);
+    setLastPracticeDate(today.toISOString());
+    await AsyncStorage.setItem('currentStreak', newStreak.toString());
+    await AsyncStorage.setItem('lastPracticeDate', today.toISOString());
   };
 
   const getReviewProblems = () => {
@@ -66,7 +106,7 @@ export const PerformanceProvider = ({ children }) => {
   };
 
   return (
-    <PerformanceContext.Provider value={{ performanceData, updatePerformance, getReviewProblems }}>
+    <PerformanceContext.Provider value={{ performanceData, updatePerformance, getReviewProblems, currentStreak }}>
       {children}
     </PerformanceContext.Provider>
   );
