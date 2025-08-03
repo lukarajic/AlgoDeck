@@ -1,21 +1,32 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { usePerformance } from '@/context/PerformanceContext';
 import problems from '@/data/problems.json';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import React from 'react';
 import { FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 
 const ReviewScreen = () => {
   const { getReviewProblems } = usePerformance();
+  const router = useRouter();
   const reviewProblemIds = getReviewProblems();
-  const reviewProblems = problems.filter(p => reviewProblemIds.includes(p.id.toString()));
+  const reviewProblems = problems.filter((p) => reviewProblemIds.includes(p.id.toString()));
+
+  const goToPractice = () => {
+    router.push('/(tabs)');
+  };
 
   return (
     <ThemedView style={styles.container}>
       <ThemedText style={styles.title}>Due for Review</ThemedText>
       {reviewProblems.length === 0 ? (
-        <ThemedText style={styles.noProblemsText}>No problems due for review today!</ThemedText>
+        <EmptyState
+          icon="checkmark.circle"
+          title="All Caught Up!"
+          message="You have no problems due for review today. Keep up the great work!"
+          action={{ title: 'Practice More', onPress: goToPractice }}
+        />
       ) : (
         <FlatList
           data={reviewProblems}
@@ -42,11 +53,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
-    textAlign: 'center',
-    marginTop: 50,
-  },
-  noProblemsText: {
-    fontSize: 18,
     textAlign: 'center',
     marginTop: 50,
   },

@@ -1,5 +1,6 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { useFavorites } from '@/context/FavoritesContext';
 import { useTopic } from '@/context/TopicContext';
 import problems from '@/data/problems.json';
@@ -19,11 +20,18 @@ export default function FavoritesScreen() {
     router.push({ pathname: '/(tabs)', params: { problemId: problem.id, favoritesOnly: 'true' } });
   };
 
+  const goToTopics = () => {
+    router.push('/(tabs)/topics');
+  };
+
   if (favoriteProblems.length === 0) {
     return (
-      <ThemedView style={styles.container}>
-        <ThemedText style={styles.emptyText}>You haven't favorited any problems yet.</ThemedText>
-      </ThemedView>
+      <EmptyState
+        icon="star"
+        title="No Favorites Yet"
+        message="You can favorite a problem by tapping the star icon on the flashcard. Your favorite problems will appear here."
+        action={{ title: 'Explore Topics', onPress: goToTopics }}
+      />
     );
   }
 
@@ -48,11 +56,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 50,
     paddingHorizontal: 20,
-  },
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 50,
-    fontSize: 18,
   },
   problemItem: {
     padding: 15,
