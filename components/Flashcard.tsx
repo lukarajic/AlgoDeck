@@ -1,9 +1,9 @@
 import { ThemedText } from '@/components/ThemedText';
-import { Colors } from '@/constants/Colors';
 import { useFavorites } from '@/context/FavoritesContext';
 import { useTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, View } from 'react-native';
 
@@ -70,31 +70,27 @@ const Flashcard = ({ problemId, title, description, solution, difficulty, hint }
     }
   };
 
+  const cardBackgroundColor = colorScheme === 'light' ? ['#ffffff', '#f0f0f0'] : ['#2c2c2c', '#1a1a1a'];
+
   return (
     <View style={styles.cardContainer}>
       <Pressable onPress={flipCard}>
-        <Animated.View style={[
-          styles.card,
-          { backgroundColor: Colors[colorScheme].background, borderColor: Colors[colorScheme].icon },
-          styles.cardFront,
-          frontAnimatedStyle,
-        ]}>
-          <ThemedText style={styles.title}>{title}</ThemedText>
-          <ThemedText style={styles.description}>{description}</ThemedText>
-          <View style={[styles.badge, getDifficultyStyle(difficulty)]}>
-            <ThemedText style={styles.badgeText}>{difficulty}</ThemedText>
-          </View>
+        <Animated.View style={[styles.card, styles.cardFront, frontAnimatedStyle]}>
+          <LinearGradient colors={cardBackgroundColor} style={styles.gradient}>
+            <ThemedText style={styles.title}>{title}</ThemedText>
+            <ThemedText style={styles.description}>{description}</ThemedText>
+            <View style={[styles.badge, getDifficultyStyle(difficulty)]}>
+              <ThemedText style={styles.badgeText}>{difficulty}</ThemedText>
+            </View>
+          </LinearGradient>
         </Animated.View>
-        <Animated.View style={[
-          styles.card,
-          { backgroundColor: Colors[colorScheme].background, borderColor: Colors[colorScheme].icon },
-          styles.cardBack,
-          backAnimatedStyle,
-        ]}>
-          <ThemedText style={styles.solution}>{solution}</ThemedText>
-          <Pressable onPress={flipCard} style={styles.flipButton}>
-            <ThemedText style={styles.flipButtonText}>View Problem</ThemedText>
-          </Pressable>
+        <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle]}>
+          <LinearGradient colors={cardBackgroundColor} style={styles.gradient}>
+            <ThemedText style={styles.solution}>{solution}</ThemedText>
+            <Pressable onPress={flipCard} style={styles.flipButton}>
+              <ThemedText style={styles.flipButtonText}>View Problem</ThemedText>
+            </Pressable>
+          </LinearGradient>
         </Animated.View>
       </Pressable>
       <Pressable onPress={handleToggleFavorite} style={styles.favoriteButton}>
@@ -125,23 +121,29 @@ const styles = StyleSheet.create({
     height: 420,
     borderRadius: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
   },
   card: {
     width: '100%',
     height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
     backfaceVisibility: 'hidden',
     borderRadius: 20,
+    overflow: 'hidden',
+  },
+  gradient: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
+    borderRadius: 20,
     borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  cardFront: {
-  },
+  cardFront: {},
   cardBack: {
     position: 'absolute',
     top: 0,
@@ -170,7 +172,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFC107', // Amber
   },
   hardBadge: {
-    backgroundColor: '#F4436', // Red
+    backgroundColor: '#F44336', // Red
   },
   badgeText: {
     color: '#fff',

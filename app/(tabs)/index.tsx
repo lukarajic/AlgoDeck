@@ -1,17 +1,17 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { Colors } from '@/constants/Colors';
 import { useFavorites } from '@/context/FavoritesContext';
+import { useTheme } from '@/context/ThemeContext';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Animated, Pressable, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import Flashcard from '../../components/Flashcard';
 import { usePerformance } from '../../context/PerformanceContext';
 import { useTopic } from '../../context/TopicContext';
 import problems from '../../data/problems.json';
-import { useTheme } from '@/context/ThemeContext';
-import { Colors } from '@/constants/Colors';
 
 const PracticeScreen = () => {
   const { selectedTopic, setSelectedTopic } = useTopic();
@@ -27,6 +27,13 @@ const PracticeScreen = () => {
   const favoritesOnly = params.favoritesOnly === 'true';
   const reviewMode = params.reviewMode === 'true';
   const { colorScheme } = useTheme();
+  const scaleAnimIncorrect = useRef(new Animated.Value(1)).current;
+  const scaleAnimCorrect = useRef(new Animated.Value(1)).current;
+  const difficultyAnims = {
+    Easy: useRef(new Animated.Value(1)).current,
+    Medium: useRef(new Animated.Value(1)).current,
+    Hard: useRef(new Animated.Value(1)).current,
+  };
 
   useEffect(() => {
     const currentProblemId = filteredProblems[cardIndex]?.id;
@@ -54,23 +61,28 @@ const PracticeScreen = () => {
       );
     }
 
+    const newIndex = newProblems.findIndex((p) => p.id === currentProblemId);
+
     setFilteredProblems(newProblems);
-
-    let newIndex = 0;
-    if (params.problemId) {
-      newIndex = newProblems.findIndex((p) => p.id === parseInt(params.problemId as string, 10));
-      if (newIndex === -1) newIndex = 0;
-    } else if (currentProblemId) {
-      newIndex = newProblems.findIndex((p) => p.id === currentProblemId);
-      if (newIndex === -1) newIndex = 0; // If current problem is no longer in filtered list, go to first card
-    }
-
-    setCardIndex(newIndex);
+    setCardIndex(newIndex !== -1 ? newIndex : 0);
     setDeckFinished(false);
     if (swiperRef.current) {
-      swiperRef.current.jumpToCardIndex(newIndex);
+      swiperRef.current.jumpToCardIndex(newIndex !== -1 ? newIndex : 0);
     }
-  }, [selectedTopic, selectedDifficulties, searchQuery, params.problemId, favoritesOnly, favorites.length, reviewMode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTopic, selectedDifficulties, searchQuery, favoritesOnly, favorites, reviewMode, getReviewProblems]);
+
+  useEffect(() => {
+    if (params.problemId) {
+      const newIndex = filteredProblems.findIndex((p) => p.id === parseInt(params.problemId as string, 10));
+      if (newIndex !== -1) {
+        setCardIndex(newIndex);
+        if (swiperRef.current) {
+          swiperRef.current.jumpToCardIndex(newIndex);
+        }
+      }
+    }
+  }, [params.problemId, filteredProblems]);
 
   useEffect(() => {
     if (filteredProblems.length > 0 && cardIndex >= filteredProblems.length) {
@@ -149,6 +161,22 @@ const PracticeScreen = () => {
     setSearchQuery('');
   };
 
+  const handlePressIn = (anim: Animated.Value) => {
+    Animated.spring(anim, {
+      toValue: 0.95,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = (anim: Animated.Value) => {
+    Animated.spring(anim, {
+      toValue: 1,
+      friction: 3,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+  };
+
   if (deckFinished) {
     return (
       <ThemedView style={styles.container}>
@@ -179,26 +207,32 @@ const PracticeScreen = () => {
       />
       <View style={styles.difficultyContainer}>
         {['Easy', 'Medium', 'Hard'].map((difficulty) => (
-          <TouchableOpacity
+          <Pressable
             key={difficulty}
-            style={[
-              styles.difficultyButton,
-              selectedDifficulties.includes(difficulty) && styles.difficultyButtonSelected,
-              (favoritesOnly || reviewMode) && styles.disabledButton,
-            ]}
+            onPressIn={() => handlePressIn(difficultyAnims[difficulty])}
+            onPressOut={() => handlePressOut(difficultyAnims[difficulty])}
             onPress={() => toggleDifficulty(difficulty)}
             disabled={favoritesOnly || reviewMode}
           >
-            <ThemedText
+            <Animated.View
               style={[
-                styles.difficultyButtonText,
-                selectedDifficulties.includes(difficulty) && styles.difficultyButtonTextSelected,
-                (favoritesOnly || reviewMode) && styles.disabledButtonText,
+                styles.difficultyButton,
+                selectedDifficulties.includes(difficulty) && styles.difficultyButtonSelected,
+                (favoritesOnly || reviewMode) && styles.disabledButton,
+                { transform: [{ scale: difficultyAnims[difficulty] }] },
               ]}
             >
-              {difficulty}
-            </ThemedText>
-          </TouchableOpacity>
+              <ThemedText
+                style={[
+                  styles.difficultyButtonText,
+                  selectedDifficulties.includes(difficulty) && styles.difficultyButtonTextSelected,
+                  (favoritesOnly || reviewMode) && styles.disabledButtonText,
+                ]}
+              >
+                {difficulty}
+              </ThemedText>
+            </Animated.View>
+          </Pressable>
         ))}
       </View>
       <ThemedText style={styles.topicText}>
@@ -248,24 +282,30 @@ const PracticeScreen = () => {
         Card {Math.min(cardIndex + 1, filteredProblems.length)} of {filteredProblems.length}
       </ThemedText>
       <View style={styles.buttonsContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.incorrectButton]}
+        <Pressable
+          onPressIn={() => handlePressIn(scaleAnimIncorrect)}
+          onPressOut={() => handlePressOut(scaleAnimIncorrect)}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             swiperRef.current?.swipeLeft();
           }}
         >
-          <ThemedText style={styles.buttonText}>Incorrect</ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.correctButton]}
+          <Animated.View style={[styles.button, styles.incorrectButton, { transform: [{ scale: scaleAnimIncorrect }] }]}>
+            <ThemedText style={styles.buttonText}>Incorrect</ThemedText>
+          </Animated.View>
+        </Pressable>
+        <Pressable
+          onPressIn={() => handlePressIn(scaleAnimCorrect)}
+          onPressOut={() => handlePressOut(scaleAnimCorrect)}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             swiperRef.current?.swipeRight();
           }}
         >
-          <ThemedText style={styles.buttonText}>Correct</ThemedText>
-        </TouchableOpacity>
+          <Animated.View style={[styles.button, styles.correctButton, { transform: [{ scale: scaleAnimCorrect }] }]}>
+            <ThemedText style={styles.buttonText}>Correct</ThemedText>
+          </Animated.View>
+        </Pressable>
       </View>
       <TouchableOpacity
         style={[styles.weakestButton, (favoritesOnly || reviewMode) && styles.disabledButton]}
@@ -368,13 +408,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#007AFF',
     marginHorizontal: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
   },
   difficultyButtonSelected: {
     backgroundColor: '#007AFF',
+    borderColor: '#0056b3',
   },
   difficultyButtonText: {
     color: '#007AFF',
     fontSize: 14,
+    fontWeight: '600',
   },
   difficultyButtonTextSelected: {
     color: '#fff',
@@ -408,6 +455,7 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     backgroundColor: '#a9a9a9',
+    borderColor: '#999',
   },
   disabledButtonText: {
     color: '#d3d3d3',

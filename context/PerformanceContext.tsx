@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PerformanceContext = createContext(null);
@@ -97,13 +97,13 @@ export const PerformanceProvider = ({ children }) => {
     await AsyncStorage.setItem('lastPracticeDate', today.toISOString());
   };
 
-  const getReviewProblems = () => {
+  const getReviewProblems = useCallback(() => {
     const now = new Date();
     return Object.keys(performanceData).filter(problemId => {
       const problem = performanceData[problemId];
       return new Date(problem.nextReview) <= now;
     });
-  };
+  }, [performanceData]);
 
   return (
     <PerformanceContext.Provider value={{ performanceData, updatePerformance, getReviewProblems, currentStreak }}>
