@@ -1,0 +1,39 @@
+
+[
+  {
+    "id": "FIRST_CORRECT",
+    "title": "First Step",
+    "description": "Answer your first problem correctly.",
+    "icon": "check-circle"
+  },
+  {
+    "id": "STREAK_3",
+    "title": "On a Roll",
+    "description": "Maintain a 3-day streak.",
+    "icon": "fire"
+  },
+  {
+    "id": "STREAK_7",
+    "title": "Week of Wisdom",
+    "description": "Maintain a 7-day streak.",
+    "icon": "calendar-check-o"
+  },
+  {
+    "id": "TOPIC_MASTER_ARRAYS",
+    "title": "Array Architect",
+    "description": "Master the Arrays topic by getting 100% on all problems.",
+    "icon": "code"
+  },
+  {
+    "id": "TOPIC_MASTER_STRINGS",
+    "title": "String Sensei",
+    "description": "Master the Strings topic by getting 100% on all problems.",
+    "icon": "code"
+  },
+  {
+    "id": "ALL_CORRECT_10",
+    "title": "Perfect 10",
+    "description": "Answer 10 different problems correctly.",
+    "icon": "star"
+  }
+]

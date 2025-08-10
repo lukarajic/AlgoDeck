@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import problems from '@/data/problems.json';
 
 const PerformanceContext = createContext(null);
 
@@ -113,3 +114,34 @@ export const PerformanceProvider = ({ children }) => {
 };
 
 export const usePerformance = () => useContext(PerformanceContext);
+
+export const usePerformanceStats = () => {
+  const { performanceData } = usePerformance();
+  const stats = {};
+  let totalCorrect = 0;
+  let totalIncorrect = 0;
+
+  for (const problemId in performanceData) {
+    const { correct, incorrect } = performanceData[problemId];
+    const problem = problems.find(p => p.id === parseInt(problemId));
+    if (!problem) continue;
+
+    const topic = problem.category;
+    if (!stats[topic]) {
+      stats[topic] = { correct: 0, incorrect: 0, accuracy: 0 };
+    }
+    stats[topic].correct += correct;
+    stats[topic].incorrect += incorrect;
+    totalCorrect += correct;
+    totalIncorrect += incorrect;
+  }
+
+  for (const topic in stats) {
+    const { correct, incorrect } = stats[topic];
+    stats[topic].accuracy = correct + incorrect > 0 ? (correct / (correct + incorrect)) * 100 : 0;
+  }
+
+  const overallAccuracy = totalCorrect + totalIncorrect > 0 ? (totalCorrect / (totalCorrect + totalIncorrect)) * 100 : 0;
+
+  return { stats, overallAccuracy };
+};

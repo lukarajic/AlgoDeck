@@ -1,3 +1,4 @@
+import { AchievementsProvider } from '@/context/AchievementsContext';
 import { FavoritesProvider } from '@/context/FavoritesContext';
 import { PerformanceProvider } from '@/context/PerformanceContext';
 import { TopicProvider } from '@/context/TopicContext';
@@ -56,9 +57,11 @@ export default function RootLayout() {
     <FavoritesProvider>
       <PerformanceProvider>
         <TopicProvider>
-          <ThemeProvider>
-            <RootLayoutNav />
-          </ThemeProvider>
+          <AchievementsProvider>
+            <ThemeProvider>
+              <RootLayoutNav />
+            </ThemeProvider>
+          </AchievementsProvider>
         </TopicProvider>
       </PerformanceProvider>
     </FavoritesProvider>
