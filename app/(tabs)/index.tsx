@@ -11,13 +11,41 @@ import Swiper from 'react-native-deck-swiper';
 import Flashcard from '../../components/Flashcard';
 import { usePerformance } from '../../context/PerformanceContext';
 import { useTopic } from '../../context/TopicContext';
-import problems from '../../data/problems.json';
+import leetcodeProblemsData from '../../data/leetcode_problems.json';
+
+interface LeetcodeProblem {
+  id: number;
+  slug: string;
+  title: string;
+  difficulty: string;
+  content: string;
+  topicTags: string[];
+  solution: string;
+}
+
+interface Problem {
+  id: number;
+  title: string;
+  description: string;
+  solution: string;
+  category: string;
+  difficulty: string;
+}
+
+const mappedProblems: Problem[] = leetcodeProblemsData.map((p: LeetcodeProblem) => ({
+  id: p.id,
+  title: p.title,
+  description: p.content,
+  solution: p.solution,
+  category: p.topicTags && p.topicTags.length > 0 ? p.topicTags[0] : 'Unknown',
+  difficulty: p.difficulty,
+}));
 
 const PracticeScreen = () => {
   const { selectedTopic, setSelectedTopic } = useTopic();
   const { performanceData, updatePerformance, getReviewProblems } = usePerformance();
   const { favorites } = useFavorites();
-  const [filteredProblems, setFilteredProblems] = useState([]);
+  const [filteredProblems, setFilteredProblems] = useState<Problem[]>([]);
   const [cardIndex, setCardIndex] = useState(0);
   const [deckFinished, setDeckFinished] = useState(false);
   const swiperRef = useRef(null);
@@ -38,7 +66,7 @@ const PracticeScreen = () => {
   useEffect(() => {
     const currentProblemId = filteredProblems[cardIndex]?.id;
 
-    let newProblems = problems;
+    let newProblems = mappedProblems;
 
     if (reviewMode) {
       const reviewProblemIds = getReviewProblems();
@@ -109,7 +137,7 @@ const PracticeScreen = () => {
 
   const findWeakestTopic = () => {
     const topicStats: { [key: string]: { correct: number; incorrect: number; total: number } } = {};
-    for (const problem of problems) {
+    for (const problem of mappedProblems) {
       const category = problem.category;
       if (!topicStats[category]) {
         topicStats[category] = { correct: 0, incorrect: 0, total: 0 };
@@ -261,7 +289,6 @@ const PracticeScreen = () => {
                   description={card.description}
                   solution={card.solution}
                   difficulty={card.difficulty}
-                  hint={card.hint}
                 />
               ) : null
             }

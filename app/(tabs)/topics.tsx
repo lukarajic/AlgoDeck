@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import problems from '../../data/problems.json';
+import leetcodeProblemsData from '../../data/leetcode_problems.json';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useTopic } from '../../context/TopicContext';
@@ -11,10 +11,19 @@ const TopicsScreen = () => {
   const { setSelectedTopic } = useTopic();
   const { performanceData } = usePerformance();
   const router = useRouter();
-  const topics = ['All', ...new Set(problems.map((problem) => problem.category))];
+  const mappedProblems = leetcodeProblemsData.map((p: any) => ({
+    id: p.id,
+    title: p.title,
+    description: p.content,
+    solution: p.solution,
+    category: p.topicTags && p.topicTags.length > 0 ? p.topicTags[0] : 'Unknown',
+    difficulty: p.difficulty,
+  }));
+
+  const topics = ['All', ...new Set(mappedProblems.map((problem) => problem.category))];
 
   const getTopicStats = (topic) => {
-    const topicProblems = problems.filter((p) => p.category === topic);
+    const topicProblems = mappedProblems.filter((p) => p.category === topic);
     const stats = { correct: 0, incorrect: 0 };
 
     for (const problem of topicProblems) {
@@ -79,12 +88,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    paddingTop: 50,
+    paddingBottom: 80,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    marginTop: 40,
   },
   topicItem: {
     padding: 15,

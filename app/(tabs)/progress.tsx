@@ -1,10 +1,38 @@
 import React from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { usePerformance } from '../../context/PerformanceContext';
-import problems from '../../data/problems.json';
+import leetcodeProblemsData from '../../data/leetcode_problems.json';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import ProgressBar from '../../components/ui/ProgressBar';
+
+interface LeetcodeProblem {
+  id: number;
+  slug: string;
+  title: string;
+  difficulty: string;
+  content: string;
+  topicTags: string[];
+  solution: string;
+}
+
+interface Problem {
+  id: number;
+  title: string;
+  description: string;
+  solution: string;
+  category: string;
+  difficulty: string;
+}
+
+const mappedProblems: Problem[] = leetcodeProblemsData.map((p: LeetcodeProblem) => ({
+  id: p.id,
+  title: p.title,
+  description: p.content,
+  solution: p.solution,
+  category: p.topicTags && p.topicTags.length > 0 ? p.topicTags[0] : 'Unknown',
+  difficulty: p.difficulty,
+}));
 
 export default function ProgressScreen() {
   const { performanceData, updatePerformance, currentStreak } = usePerformance();
@@ -12,7 +40,7 @@ export default function ProgressScreen() {
   const getTopicStats = () => {
     const topicStats = {};
 
-    for (const problem of problems) {
+    for (const problem of mappedProblems) {
       const problemId = problem.id;
       const category = problem.category;
       const performance = performanceData[problemId];

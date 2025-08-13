@@ -5,7 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState } from 'react';
-import { Animated, Pressable, StyleSheet, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, View, Modal } from 'react-native';
+import Markdown from 'react-native-markdown-display';
 
 interface FlashcardProps {
   problemId: number;
@@ -13,14 +14,13 @@ interface FlashcardProps {
   description: string;
   solution: string;
   difficulty: string;
-  hint?: string;
 }
 
-const Flashcard = ({ problemId, title, description, solution, difficulty, hint }: FlashcardProps) => {
+const Flashcard = ({ problemId, title, description, solution, difficulty }: FlashcardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
-  const [showHint, setShowHint] = useState(false);
   const { isFavorite, toggleFavorite } = useFavorites();
   const { colorScheme } = useTheme();
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const flipAnimation = useRef(new Animated.Value(0)).current;
 
   const handleToggleFavorite = () => {
@@ -28,7 +28,24 @@ const Flashcard = ({ problemId, title, description, solution, difficulty, hint }
     toggleFavorite(problemId);
   };
 
+  const getTruncatedText = (text: string) => {
+    const paragraphs = text.split('\n\n');
+    return paragraphs[0];
+  };
+
+  const shouldShowReadMore = (text: string) => {
+    const paragraphs = text.split('\n\n');
+    return paragraphs.length >= 2;
+  };
+
+  const handleToggleExpand = () => {
+    console.log('handleToggleExpand called');
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsModalVisible(true);
+  };
+
   const flipCard = () => {
+    console.log('flipCard called');
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const toValue = isFlipped ? 0 : 180;
     Animated.timing(flipAnimation, {
@@ -72,27 +89,74 @@ const Flashcard = ({ problemId, title, description, solution, difficulty, hint }
 
   const cardBackgroundColor = colorScheme === 'light' ? ['#ffffff', '#f0f0f0'] : ['#2c2c2c', '#1a1a1a'];
 
+  const markdownStyles = StyleSheet.create({
+    body: {
+      fontSize: 18,
+      textAlign: 'center',
+      lineHeight: 24,
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    heading1: {
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    heading2: {
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    heading3: {
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    heading4: {
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    heading5: {
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    heading6: {
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    // Add more styles for other Markdown elements as needed
+  });
+
   return (
     <View style={styles.cardContainer}>
-      <Pressable onPress={flipCard}>
+      <Pressable onPress={flipCard} style={StyleSheet.absoluteFill} pointerEvents="box-none">
         <Animated.View style={[styles.card, styles.cardFront, frontAnimatedStyle]}>
           <LinearGradient colors={cardBackgroundColor} style={styles.gradient}>
-            <ThemedText style={styles.title}>{title}</ThemedText>
-            <ThemedText style={styles.description}>{description}</ThemedText>
-            <View style={[styles.badge, getDifficultyStyle(difficulty)]}>
-              <ThemedText style={styles.badgeText}>{difficulty}</ThemedText>
+            <View style={styles.cardContent}>
+              <Pressable onPress={flipCard} style={styles.titleContainer}>
+                <ThemedText style={styles.title}>{title}</ThemedText>
+              </Pressable>
+              <View style={styles.contentContainer}>
+                <Markdown style={markdownStyles}>
+                  {getTruncatedText(description)}
+                </Markdown>
+              </View>
+              <Pressable onPress={flipCard} style={[styles.badge, getDifficultyStyle(difficulty)]}>
+                <ThemedText style={styles.badgeText}>{difficulty}</ThemedText>
+              </Pressable>
             </View>
           </LinearGradient>
         </Animated.View>
         <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle]}>
           <LinearGradient colors={cardBackgroundColor} style={styles.gradient}>
-            <ThemedText style={styles.solution}>{solution}</ThemedText>
-            <Pressable onPress={flipCard} style={styles.flipButton}>
-              <ThemedText style={styles.flipButtonText}>View Problem</ThemedText>
-            </Pressable>
+            <View style={styles.cardContent}>
+              <View style={styles.contentContainer}>
+                <ThemedText style={styles.solution}>{solution}</ThemedText>
+              </View>
+              <Pressable onPress={flipCard} style={styles.flipButton}>
+                <ThemedText style={styles.flipButtonText}>View Problem</ThemedText>
+              </Pressable>
+            </View>
           </LinearGradient>
         </Animated.View>
       </Pressable>
+      {shouldShowReadMore(description) && (
+        <Pressable onPress={handleToggleExpand} style={styles.expandButton}>
+          <ThemedText style={styles.expandButtonText}>
+            Read More
+          </ThemedText>
+        </Pressable>
+      )}
       <Pressable onPress={handleToggleFavorite} style={styles.favoriteButton}>
         <Ionicons
           name={isFavorite(problemId) ? 'star' : 'star-outline'}
@@ -100,17 +164,6 @@ const Flashcard = ({ problemId, title, description, solution, difficulty, hint }
           color={isFavorite(problemId) ? '#FFD700' : '#ccc'}
         />
       </Pressable>
-      {hint && !isFlipped && (
-        <View style={styles.hintContainer}>
-          {showHint ? (
-            <ThemedText style={styles.hintText}>{hint}</ThemedText>
-          ) : (
-            <Pressable onPress={() => setShowHint(true)} style={styles.hintButton}>
-              <ThemedText style={styles.hintButtonText}>Show Hint</ThemedText>
-            </Pressable>
-          )}
-        </View>
-      )}
     </View>
   );
 };
@@ -136,8 +189,6 @@ const styles = StyleSheet.create({
   gradient: {
     width: '100%',
     height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
     borderRadius: 20,
     borderWidth: 1,
@@ -148,10 +199,42 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
   },
+  cardContent: {
+    flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  titleContainer: {
+    alignItems: 'center',
+    paddingVertical: 5,
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 15,
+    textAlign: 'center',
+  },
+  contentContainer: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  expandButton: {
+    position: 'absolute',
+    bottom: 80,
+    alignSelf: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: 'rgba(0, 123, 255, 0.15)',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 123, 255, 0.3)',
+  },
+  expandButtonText: {
+    color: '#007AFF',
+    fontSize: 14,
+    fontWeight: '600',
     textAlign: 'center',
   },
   description: {
@@ -160,10 +243,10 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   badge: {
-    marginTop: 15,
     paddingVertical: 5,
     paddingHorizontal: 15,
     borderRadius: 15,
+    marginVertical: 5,
   },
   easyBadge: {
     backgroundColor: '#4CAF50', // Green
@@ -178,34 +261,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: 'bold',
-  },
-  hintContainer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-    alignItems: 'center',
-    zIndex: 200,
-  },
-  hintButton: {
-    marginTop: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
-    borderRadius: 20,
-  },
-  hintButtonText: {
-    color: '#007AFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  hintText: {
-    marginTop: 10,
-    fontStyle: 'italic',
-    textAlign: 'center',
-    padding: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 10,
   },
   solution: {
     fontSize: 16,

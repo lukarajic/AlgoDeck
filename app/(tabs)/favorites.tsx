@@ -3,17 +3,45 @@ import { ThemedView } from '@/components/ThemedView';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useFavorites } from '@/context/FavoritesContext';
 import { useTopic } from '@/context/TopicContext';
-import problems from '@/data/problems.json';
+import leetcodeProblemsData from '@/data/leetcode_problems.json';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+
+interface LeetcodeProblem {
+  id: number;
+  slug: string;
+  title: string;
+  difficulty: string;
+  content: string;
+  topicTags: string[];
+  solution: string;
+}
+
+interface Problem {
+  id: number;
+  title: string;
+  description: string;
+  solution: string;
+  category: string;
+  difficulty: string;
+}
+
+const mappedProblems: Problem[] = leetcodeProblemsData.map((p: LeetcodeProblem) => ({
+  id: p.id,
+  title: p.title,
+  description: p.content,
+  solution: p.solution,
+  category: p.topicTags && p.topicTags.length > 0 ? p.topicTags[0] : 'Unknown',
+  difficulty: p.difficulty,
+}));
 
 export default function FavoritesScreen() {
   const { favorites } = useFavorites();
   const { setSelectedTopic } = useTopic();
   const router = useRouter();
 
-  const favoriteProblems = problems.filter((p) => favorites.includes(p.id));
+  const favoriteProblems = mappedProblems.filter((p) => favorites.includes(p.id));
 
   const handleProblemPress = (problem) => {
     setSelectedTopic('Favorites');

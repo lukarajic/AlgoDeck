@@ -1,6 +1,34 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import problems from '@/data/problems.json';
+import leetcodeProblemsData from '@/data/leetcode_problems.json';
+
+interface LeetcodeProblem {
+  id: number;
+  slug: string;
+  title: string;
+  difficulty: string;
+  content: string;
+  topicTags: string[];
+  solution: string;
+}
+
+interface Problem {
+  id: number;
+  title: string;
+  description: string;
+  solution: string;
+  category: string;
+  difficulty: string;
+}
+
+const mappedProblems: Problem[] = leetcodeProblemsData.map((p: LeetcodeProblem) => ({
+  id: p.id,
+  title: p.title,
+  description: p.content,
+  solution: p.solution,
+  category: p.topicTags && p.topicTags.length > 0 ? p.topicTags[0] : 'Unknown',
+  difficulty: p.difficulty,
+}));
 
 const PerformanceContext = createContext(null);
 
@@ -123,7 +151,7 @@ export const usePerformanceStats = () => {
 
   for (const problemId in performanceData) {
     const { correct, incorrect } = performanceData[problemId];
-    const problem = problems.find(p => p.id === parseInt(problemId));
+    const problem = mappedProblems.find(p => p.id === parseInt(problemId));
     if (!problem) continue;
 
     const topic = problem.category;
