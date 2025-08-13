@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState } from 'react';
-import { Animated, Pressable, StyleSheet, View, Modal } from 'react-native';
+import { Animated, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 
 interface FlashcardProps {
@@ -21,6 +21,7 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
   const { isFavorite, toggleFavorite } = useFavorites();
   const { colorScheme } = useTheme();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isSolutionModalVisible, setIsSolutionModalVisible] = useState(false);
   const flipAnimation = useRef(new Animated.Value(0)).current;
 
   const handleToggleFavorite = () => {
@@ -33,19 +34,44 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
     return paragraphs[0];
   };
 
+  const getTruncatedSolution = (text: string) => {
+    // Limit to approximately 200 characters or first 3 lines
+    if (text.length <= 200) return text;
+    const truncated = text.substring(0, 200);
+    const lastSpace = truncated.lastIndexOf(' ');
+    return lastSpace > 150 ? truncated.substring(0, lastSpace) + '...' : truncated + '...';
+  };
+
   const shouldShowReadMore = (text: string) => {
     const paragraphs = text.split('\n\n');
     return paragraphs.length >= 2;
   };
 
+  const shouldShowReadMoreSolution = (text: string) => {
+    return text.length > 200;
+  };
+
   const handleToggleExpand = () => {
-    console.log('handleToggleExpand called');
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsModalVisible(true);
   };
 
+  const handleCloseModal = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsModalVisible(false);
+  };
+
+  const handleToggleSolutionExpand = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsSolutionModalVisible(true);
+  };
+
+  const handleCloseSolutionModal = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsSolutionModalVisible(false);
+  };
+
   const flipCard = () => {
-    console.log('flipCard called');
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const toValue = isFlipped ? 0 : 180;
     Animated.timing(flipAnimation, {
@@ -117,6 +143,32 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
     // Add more styles for other Markdown elements as needed
   });
 
+  const modalMarkdownStyles = StyleSheet.create({
+    body: {
+      fontSize: 16,
+      lineHeight: 24,
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    heading1: {
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    heading2: {
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    heading3: {
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    heading4: {
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    heading5: {
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    heading6: {
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+  });
+
   return (
     <View style={styles.cardContainer}>
       <Pressable onPress={flipCard} style={StyleSheet.absoluteFill} pointerEvents="box-none">
@@ -141,7 +193,7 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
           <LinearGradient colors={cardBackgroundColor} style={styles.gradient}>
             <View style={styles.cardContent}>
               <View style={styles.contentContainer}>
-                <ThemedText style={styles.solution}>{solution}</ThemedText>
+                <ThemedText style={styles.solution}>{getTruncatedSolution(solution)}</ThemedText>
               </View>
               <Pressable onPress={flipCard} style={styles.flipButton}>
                 <ThemedText style={styles.flipButtonText}>View Problem</ThemedText>
@@ -150,13 +202,23 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
           </LinearGradient>
         </Animated.View>
       </Pressable>
-      {shouldShowReadMore(description) && (
+      
+      {shouldShowReadMore(description) && !isFlipped && (
         <Pressable onPress={handleToggleExpand} style={styles.expandButton}>
           <ThemedText style={styles.expandButtonText}>
             Read More
           </ThemedText>
         </Pressable>
       )}
+
+      {shouldShowReadMoreSolution(solution) && isFlipped && (
+        <Pressable onPress={handleToggleSolutionExpand} style={styles.expandButton}>
+          <ThemedText style={styles.expandButtonText}>
+            Read More
+          </ThemedText>
+        </Pressable>
+      )}
+      
       <Pressable onPress={handleToggleFavorite} style={styles.favoriteButton}>
         <Ionicons
           name={isFavorite(problemId) ? 'star' : 'star-outline'}
@@ -164,6 +226,109 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
           color={isFavorite(problemId) ? '#FFD700' : '#ccc'}
         />
       </Pressable>
+
+      {/* Modal for full description */}
+      <Modal
+        visible={isModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={handleCloseModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[
+            styles.modalContent,
+            { backgroundColor: colorScheme === 'light' ? '#ffffff' : '#2c2c2c' }
+          ]}>
+            {/* Modal Header */}
+            <View style={styles.modalHeader}>
+              <ThemedText style={styles.modalTitle}>{title}</ThemedText>
+              <Pressable onPress={handleCloseModal} style={styles.closeButton}>
+                <Ionicons 
+                  name="close" 
+                  size={24} 
+                  color={colorScheme === 'light' ? '#000' : '#fff'} 
+                />
+              </Pressable>
+            </View>
+            
+            {/* Modal Body */}
+            <ScrollView 
+              style={styles.modalScrollView}
+              showsVerticalScrollIndicator={false}
+            >
+              <Markdown style={modalMarkdownStyles}>
+                {description}
+              </Markdown>
+            </ScrollView>
+            
+            {/* Modal Footer */}
+            <View style={styles.modalFooter}>
+              <Pressable 
+                onPress={handleCloseModal} 
+                style={[
+                  styles.modalCloseButton,
+                  { backgroundColor: colorScheme === 'light' ? '#007AFF' : '#0A84FF' }
+                ]}
+              >
+                <ThemedText style={styles.modalCloseButtonText}>Close</ThemedText>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal for full solution */}
+      <Modal
+        visible={isSolutionModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={handleCloseSolutionModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[
+            styles.modalContent,
+            { backgroundColor: colorScheme === 'light' ? '#ffffff' : '#2c2c2c' }
+          ]}>
+            {/* Modal Header */}
+            <View style={styles.modalHeader}>
+              <ThemedText style={styles.modalTitle}>Solution</ThemedText>
+              <Pressable onPress={handleCloseSolutionModal} style={styles.closeButton}>
+                <Ionicons 
+                  name="close" 
+                  size={24} 
+                  color={colorScheme === 'light' ? '#000' : '#fff'} 
+                />
+              </Pressable>
+            </View>
+            
+            {/* Modal Body */}
+            <ScrollView 
+              style={styles.modalScrollView}
+              showsVerticalScrollIndicator={false}
+            >
+              <ThemedText style={[
+                styles.modalSolutionText,
+                { color: colorScheme === 'light' ? '#000' : '#fff' }
+              ]}>
+                {solution}
+              </ThemedText>
+            </ScrollView>
+            
+            {/* Modal Footer */}
+            <View style={styles.modalFooter}>
+              <Pressable 
+                onPress={handleCloseSolutionModal} 
+                style={[
+                  styles.modalCloseButton,
+                  { backgroundColor: colorScheme === 'light' ? '#007AFF' : '#0A84FF' }
+                ]}
+              >
+                <ThemedText style={styles.modalCloseButtonText}>Close</ThemedText>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -285,6 +450,67 @@ const styles = StyleSheet.create({
     right: 15,
     zIndex: 100, // Ensure it's on top
     padding: 10, // Increase touchable area
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    width: '100%',
+    maxHeight: '80%',
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    paddingBottom: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'center',
+    paddingRight: 34, // Account for close button width
+  },
+  closeButton: {
+    padding: 5,
+  },
+  modalScrollView: {
+    paddingHorizontal: 20,
+    maxHeight: '70%',
+  },
+  modalFooter: {
+    padding: 20,
+    paddingTop: 15,
+    alignItems: 'center',
+  },
+  modalCloseButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    minWidth: 100,
+  },
+  modalCloseButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  modalSolutionText: {
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: 'left',
   },
 });
 
