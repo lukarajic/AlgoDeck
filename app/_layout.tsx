@@ -12,6 +12,7 @@ import 'react-native-reanimated';
 import SplashScreen from '@/components/SplashScreen';
 import { useFirstTime } from '@/hooks/useFirstTime';
 import { ThemeProvider, useTheme } from '@/context/ThemeContext';
+import { ProblemOfTheDayProvider } from '@/context/ProblemOfTheDayContext';
 
 function RootLayoutNav() {
   const { colorScheme, theme } = useTheme();
@@ -59,7 +60,9 @@ export default function RootLayout() {
         <TopicProvider>
           <AchievementsProvider>
             <ThemeProvider>
-              <RootLayoutNav />
+              <ProblemOfTheDayProvider>
+                <RootLayoutNav />
+              </ProblemOfTheDayProvider>
             </ThemeProvider>
           </AchievementsProvider>
         </TopicProvider>

@@ -4,13 +4,14 @@ import { Colors } from '@/constants/Colors';
 import { useFavorites } from '@/context/FavoritesContext';
 import { useTheme } from '@/context/ThemeContext';
 import * as Haptics from 'expo-haptics';
-import { useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { Alert, Animated, Pressable, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import Flashcard from '../../components/Flashcard';
 import { usePerformance } from '../../context/PerformanceContext';
 import { useTopic } from '../../context/TopicContext';
+import { useProblemOfTheDay } from '../../context/ProblemOfTheDayContext';
 import leetcodeProblemsData from '../../data/leetcode_problems.json';
 
 interface LeetcodeProblem {
@@ -45,6 +46,7 @@ const PracticeScreen = () => {
   const { selectedTopic, setSelectedTopic } = useTopic();
   const { performanceData, updatePerformance, getReviewProblems } = usePerformance();
   const { favorites } = useFavorites();
+  const { problemOfTheDay, markAsCompleted } = useProblemOfTheDay();
   const [filteredProblems, setFilteredProblems] = useState<Problem[]>([]);
   const [cardIndex, setCardIndex] = useState(0);
   const [deckFinished, setDeckFinished] = useState(false);
@@ -52,8 +54,10 @@ const PracticeScreen = () => {
   const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const params = useLocalSearchParams();
+  const router = useRouter();
   const favoritesOnly = params.favoritesOnly === 'true';
   const reviewMode = params.reviewMode === 'true';
+  const isProblemOfTheDayMode = params.potdMode === 'true';
   const { colorScheme } = useTheme();
   const scaleAnimIncorrect = useRef(new Animated.Value(1)).current;
   const scaleAnimCorrect = useRef(new Animated.Value(1)).current;
@@ -64,11 +68,11 @@ const PracticeScreen = () => {
   };
 
   useEffect(() => {
-    const currentProblemId = filteredProblems[cardIndex]?.id;
-
     let newProblems = mappedProblems;
 
-    if (reviewMode) {
+    if (isProblemOfTheDayMode) {
+        newProblems = problemOfTheDay ? [problemOfTheDay] : [];
+    } else if (reviewMode) {
       const reviewProblemIds = getReviewProblems();
       newProblems = newProblems.filter(p => reviewProblemIds.includes(p.id.toString()));
     } else if (favoritesOnly) {
@@ -89,16 +93,13 @@ const PracticeScreen = () => {
       );
     }
 
-    const newIndex = newProblems.findIndex((p) => p.id === currentProblemId);
-
     setFilteredProblems(newProblems);
-    setCardIndex(newIndex !== -1 ? newIndex : 0);
+    setCardIndex(0);
     setDeckFinished(false);
     if (swiperRef.current) {
-      swiperRef.current.jumpToCardIndex(newIndex !== -1 ? newIndex : 0);
+      swiperRef.current.jumpToCardIndex(0);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTopic, selectedDifficulties, searchQuery, favoritesOnly, favorites, reviewMode, getReviewProblems]);
+  }, [selectedTopic, selectedDifficulties, searchQuery, favoritesOnly, reviewMode, isProblemOfTheDayMode, problemOfTheDay, favorites, getReviewProblems]);
 
   useEffect(() => {
     if (params.problemId) {
@@ -122,12 +123,18 @@ const PracticeScreen = () => {
     if (cardIndex >= filteredProblems.length) {
       return;
     }
+    if (isProblemOfTheDayMode) {
+        markAsCompleted();
+    }
     const problemId = filteredProblems[cardIndex].id;
     updatePerformance(problemId, isCorrect);
     setCardIndex((prevIndex) => prevIndex + 1);
   };
 
   const handleRestart = () => {
+    if (isProblemOfTheDayMode) {
+        router.replace('/(tabs)/');
+    }
     setCardIndex(0);
     setDeckFinished(false);
     if (swiperRef.current) {
@@ -264,7 +271,7 @@ const PracticeScreen = () => {
         ))}
       </View>
       <ThemedText style={styles.topicText}>
-        {reviewMode ? 'Reviewing Due Cards' : favoritesOnly ? 'Favorites' : `Topic: ${selectedTopic}`}
+        {isProblemOfTheDayMode ? 'Problem of the Day' : reviewMode ? 'Reviewing Due Cards' : favoritesOnly ? 'Favorites' : `Topic: ${selectedTopic}`}
       </ThemedText>
       {filteredProblems.length === 0 ? (
         <ThemedView style={styles.noProblemsContainer}>
@@ -301,7 +308,7 @@ const PracticeScreen = () => {
             stackSeparation={15}
             animateCardOpacity
             verticalSwipe={false}
-            key={`${selectedTopic}-${selectedDifficulties.join('-')}-${favoritesOnly}-${favorites.length}-${reviewMode}`}
+            key={`${selectedTopic}-${selectedDifficulties.join('-')}-${favoritesOnly}-${favorites.length}-${reviewMode}-${isProblemOfTheDayMode}`}
           />
         </View>
       )}
