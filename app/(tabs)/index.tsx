@@ -99,7 +99,7 @@ const PracticeScreen = () => {
     if (swiperRef.current) {
       swiperRef.current.jumpToCardIndex(0);
     }
-  }, [selectedTopic, selectedDifficulties, searchQuery, favoritesOnly, reviewMode, isProblemOfTheDayMode, problemOfTheDay, favorites, getReviewProblems]);
+  }, [selectedTopic, selectedDifficulties, searchQuery, favoritesOnly, reviewMode, isProblemOfTheDayMode, problemOfTheDay, favorites]);
 
   useEffect(() => {
     if (params.problemId) {
