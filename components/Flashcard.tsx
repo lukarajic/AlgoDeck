@@ -175,9 +175,18 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
         <Animated.View style={[styles.card, styles.cardFront, frontAnimatedStyle]}>
           <LinearGradient colors={cardBackgroundColor} style={styles.gradient}>
             <View style={styles.cardContent}>
-              <Pressable onPress={flipCard} style={styles.titleContainer}>
-                <ThemedText style={styles.title}>{title}</ThemedText>
-              </Pressable>
+              <View style={styles.headerContainer}>
+                <Pressable onPress={flipCard} style={styles.titleContainer}>
+                  <ThemedText style={styles.title}>{title}</ThemedText>
+                </Pressable>
+                <Pressable onPress={handleToggleFavorite} style={styles.favoriteButton}>
+                  <Ionicons
+                    name={isFavorite(problemId) ? 'star' : 'star-outline'}
+                    size={28}
+                    color={isFavorite(problemId) ? '#FFD700' : '#ccc'}
+                  />
+                </Pressable>
+              </View>
               <View style={styles.contentContainer}>
                 <Markdown style={markdownStyles}>
                   {getTruncatedText(description)}
@@ -218,14 +227,6 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
           </ThemedText>
         </Pressable>
       )}
-      
-      <Pressable onPress={handleToggleFavorite} style={styles.favoriteButton}>
-        <Ionicons
-          name={isFavorite(problemId) ? 'star' : 'star-outline'}
-          size={28}
-          color={isFavorite(problemId) ? '#FFD700' : '#ccc'}
-        />
-      </Pressable>
 
       {/* Modal for full description */}
       <Modal
@@ -369,9 +370,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    position: 'relative',
+    paddingHorizontal: 5, // Adjust as needed
+  },
   titleContainer: {
+    flex: 1,
     alignItems: 'center',
     paddingVertical: 5,
+    marginHorizontal: 40, // Ensure there's space for the button
   },
   title: {
     fontSize: 24,
@@ -446,9 +457,9 @@ const styles = StyleSheet.create({
   },
   favoriteButton: {
     position: 'absolute',
-    top: 15,
-    right: 15,
-    zIndex: 100, // Ensure it's on top
+    right: 0,
+    top: '50%',
+    transform: [{ translateY: -19 }], // Adjust to vertically center with title
     padding: 10, // Increase touchable area
   },
   // Modal styles
