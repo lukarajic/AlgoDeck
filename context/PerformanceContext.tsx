@@ -21,7 +21,7 @@ interface Problem {
   difficulty: string;
 }
 
-const mappedProblems: Problem[] = leetcodeProblemsData.map((p: LeetcodeProblem) => ({
+const mappedProblems: Problem[] = (leetcodeProblemsData || []).filter(p => p).map((p: LeetcodeProblem) => ({
   id: p.id,
   title: p.title,
   description: p.content,

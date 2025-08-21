@@ -11,19 +11,12 @@ const TopicsScreen = () => {
   const { setSelectedTopic } = useTopic();
   const { performanceData } = usePerformance();
   const router = useRouter();
-  const mappedProblems = leetcodeProblemsData.map((p: any) => ({
-    id: p.id,
-    title: p.title,
-    description: p.content,
-    solution: p.solution,
-    category: p.topicTags && p.topicTags.length > 0 ? p.topicTags[0] : 'Unknown',
-    difficulty: p.difficulty,
-  }));
 
-  const topics = ['All', ...new Set(mappedProblems.map((problem) => problem.category))];
+  const allTags = leetcodeProblemsData.flatMap(p => p.topicTags || []);
+  const topics = ['All', ...new Set(allTags)];
 
   const getTopicStats = (topic) => {
-    const topicProblems = mappedProblems.filter((p) => p.category === topic);
+    const topicProblems = leetcodeProblemsData.filter(p => p.topicTags && p.topicTags.includes(topic));
     const stats = { correct: 0, incorrect: 0 };
 
     for (const problem of topicProblems) {
@@ -79,6 +72,7 @@ const TopicsScreen = () => {
         data={topics}
         keyExtractor={(item) => item}
         renderItem={renderTopicItem}
+        contentContainerStyle={{ paddingBottom: 100 }}
       />
     </ThemedView>
   );
@@ -88,7 +82,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    paddingBottom: 80,
   },
   title: {
     fontSize: 24,

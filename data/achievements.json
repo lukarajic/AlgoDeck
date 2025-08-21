@@ -1,4 +1,3 @@
-
 [
   {
     "id": "FIRST_CORRECT",
@@ -19,21 +18,177 @@
     "icon": "calendar-check-o"
   },
   {
-    "id": "TOPIC_MASTER_ARRAYS",
-    "title": "Array Architect",
-    "description": "Master the Arrays topic by getting 100% on all problems.",
-    "icon": "code"
-  },
-  {
-    "id": "TOPIC_MASTER_STRINGS",
-    "title": "String Sensei",
-    "description": "Master the Strings topic by getting 100% on all problems.",
-    "icon": "code"
-  },
-  {
     "id": "ALL_CORRECT_10",
-    "title": "Perfect 10",
+    "title": "Problem Solver",
     "description": "Answer 10 different problems correctly.",
     "icon": "star"
+  },
+  {
+    "id": "ALL_CORRECT_25",
+    "title": "Problem Pro",
+    "description": "Answer 25 different problems correctly.",
+    "icon": "star-half-o"
+  },
+  {
+    "id": "ALL_CORRECT_50",
+    "title": "Problem Master",
+    "description": "Answer 50 different problems correctly.",
+    "icon": "trophy"
+  },
+  {
+    "id": "ALL_CORRECT_100",
+    "title": "Problem Legend",
+    "description": "Answer 100 different problems correctly.",
+    "icon": "diamond"
+  },
+  {
+    "id": "EASY_MASTER",
+    "title": "Easy Peasy",
+    "description": "Master all 'Easy' problems.",
+    "icon": "leaf"
+  },
+  {
+    "id": "MEDIUM_MASTER",
+    "title": "Medium Mettle",
+    "description": "Master all 'Medium' problems.",
+    "icon": "shield"
+  },
+  {
+    "id": "HARD_MASTER",
+    "title": "Hardcore Hacker",
+    "description": "Master all 'Hard' problems.",
+    "icon": "rocket"
+  },
+  {
+    "id": "TOPIC_MASTER_ARRAY",
+    "title": "Array Architect",
+    "description": "Master the Array topic.",
+    "icon": "th-large"
+  },
+  {
+    "id": "TOPIC_MASTER_STRING",
+    "title": "String Sensei",
+    "description": "Master the String topic.",
+    "icon": "font"
+  },
+  {
+    "id": "TOPIC_MASTER_HASH_TABLE",
+    "title": "Hash Hero",
+    "description": "Master the Hash Table topic.",
+    "icon": "hashtag"
+  },
+  {
+    "id": "TOPIC_MASTER_LINKED_LIST",
+    "title": "List Legend",
+    "description": "Master the Linked List topic.",
+    "icon": "link"
+  },
+  {
+    "id": "TOPIC_MASTER_TREE",
+    "title": "Tree Titan",
+    "description": "Master all Tree-related topics.",
+    "icon": "tree"
+  },
+  {
+    "id": "TOPIC_MASTER_DYNAMIC_PROGRAMMING",
+    "title": "DP Dominator",
+    "description": "Master the Dynamic Programming topic.",
+    "icon": "cogs"
+  },
+  {
+    "id": "TOPIC_MASTER_BINARY_SEARCH",
+    "title": "Binary Search Buccaneer",
+    "description": "Master the Binary Search topic.",
+    "icon": "search"
+  },
+  {
+    "id": "TOPIC_MASTER_BACKTRACKING",
+    "title": "Backtracking Boss",
+    "description": "Master the Backtracking topic.",
+    "icon": "undo"
+  },
+  {
+    "id": "TOPIC_MASTER_MATH",
+    "title": "Math Magician",
+    "description": "Master the Math topic.",
+    "icon": "calculator"
+  },
+  {
+    "id": "TOPIC_MASTER_TWO_POINTERS",
+    "title": "Two Pointers Tactician",
+    "description": "Master the Two Pointers topic.",
+    "icon": "arrows-h"
+  },
+  {
+    "id": "TOPIC_MASTER_STACK",
+    "title": "Stack Star",
+    "description": "Master the Stack topic.",
+    "icon": "stack-overflow"
+  },
+  {
+    "id": "TOPIC_MASTER_GREEDY",
+    "title": "Greedy Guru",
+    "description": "Master the Greedy topic.",
+    "icon": "money"
+  },
+  {
+    "id": "TOPIC_MASTER_SORTING",
+    "title": "Sorting Specialist",
+    "description": "Master the Sorting topic.",
+    "icon": "sort-amount-asc"
+  },
+  {
+    "id": "TOPIC_MASTER_HEAP",
+    "title": "Heap Hero",
+    "description": "Master the Heap (Priority Queue) topic.",
+    "icon": "cubes"
+  },
+  {
+    "id": "TOPIC_MASTER_MATRIX",
+    "title": "Matrix Master",
+    "description": "Master the Matrix topic.",
+    "icon": "table"
+  },
+  {
+    "id": "TOPIC_MASTER_BIT_MANIPULATION",
+    "title": "Bit Bender",
+    "description": "Master the Bit Manipulation topic.",
+    "icon": "microchip"
+  },
+  {
+    "id": "TOPIC_MASTER_DIVIDE_AND_CONQUER",
+    "title": "Divide & Conqueror",
+    "description": "Master the Divide and Conquer topic.",
+    "icon": "sitemap"
+  },
+  {
+    "id": "TOPIC_MASTER_RECURSION",
+    "title": "Recursion Ruler",
+    "description": "Master the Recursion topic.",
+    "icon": "refresh"
+  },
+  {
+    "id": "TOPIC_MASTER_TRIE",
+    "title": "Trie Traverser",
+    "description": "Master the Trie topic.",
+    "icon": "sitemap"
+  },
+  {
+    "id": "TOPIC_MASTER_MERGE_SORT",
+    "title": "Merge Sort Maestro",
+    "description": "Master the Merge Sort topic.",
+    "icon": "sort"
+  },
+  {
+    "id": "TOPIC_MASTER_SLIDING_WINDOW",
+    "title": "Sliding Window Wizard",
+    "description": "Master the Sliding Window topic.",
+    "icon": "window-maximize"
+  },
+  {
+    "id": "TOPIC_MASTER_COMBINATORICS",
+    "title": "Combinatorics King",
+    "description": "Master the Combinatorics topic.",
+    "icon": "calculator"
   }
 ]

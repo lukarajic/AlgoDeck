@@ -29,18 +29,20 @@ interface Problem {
   title: string;
   description: string;
   solution: string;
-  category: string;
+  topicTags: string[];
   difficulty: string;
 }
 
-const mappedProblems: Problem[] = leetcodeProblemsData.map((p: LeetcodeProblem) => ({
+const mappedProblems: Problem[] = leetcodeProblemsData.filter(p => p).map((p: LeetcodeProblem) => ({
   id: p.id,
   title: p.title,
   description: p.content,
   solution: p.solution,
-  category: p.topicTags && p.topicTags.length > 0 ? p.topicTags[0] : 'Unknown',
+  topicTags: p.topicTags || [],
   difficulty: p.difficulty,
 }));
+
+
 
 const PracticeScreen = () => {
   const { selectedTopic, setSelectedTopic } = useTopic();
@@ -71,7 +73,8 @@ const PracticeScreen = () => {
     let newProblems = mappedProblems;
 
     if (isProblemOfTheDayMode) {
-        newProblems = problemOfTheDay ? [problemOfTheDay] : [];
+        const potdProblem = mappedProblems.find(p => p.id === problemOfTheDay?.id);
+        newProblems = potdProblem ? [potdProblem] : [];
     } else if (reviewMode) {
       const reviewProblemIds = getReviewProblems();
       newProblems = newProblems.filter(p => reviewProblemIds.includes(p.id.toString()));
@@ -79,7 +82,7 @@ const PracticeScreen = () => {
       newProblems = newProblems.filter((p) => favorites.includes(p.id));
     } else {
       if (selectedTopic !== 'All') {
-        newProblems = newProblems.filter((p) => p.category === selectedTopic);
+        newProblems = newProblems.filter((p) => p.topicTags.includes(selectedTopic));
       }
 
       if (selectedDifficulties.length > 0) {
@@ -143,34 +146,33 @@ const PracticeScreen = () => {
   };
 
   const findWeakestTopic = () => {
-    const topicStats: { [key: string]: { correct: number; incorrect: number; total: number } } = {};
-    for (const problem of mappedProblems) {
-      const category = problem.category;
-      if (!topicStats[category]) {
-        topicStats[category] = { correct: 0, incorrect: 0, total: 0 };
-      }
-      const problemPerformance = performanceData[problem.id];
-      if (problemPerformance) {
-        topicStats[category].correct += problemPerformance.correct;
-        topicStats[category].incorrect += problemPerformance.incorrect;
-      }
-      topicStats[category].total++;
-    }
-
-    let weakestTopic = null;
+    const allTags = new Set(mappedProblems.flatMap(p => p.topicTags));
+    let weakestTopic: string | null = null;
     let lowestAccuracy = 101;
 
-    for (const topic in topicStats) {
-      const stats = topicStats[topic];
-      const totalAnswered = stats.correct + stats.incorrect;
-      if (totalAnswered > 0) {
-        const accuracy = (stats.correct / totalAnswered) * 100;
-        if (accuracy < lowestAccuracy) {
-          lowestAccuracy = accuracy;
-          weakestTopic = topic;
+    allTags.forEach(tag => {
+        const topicProblems = mappedProblems.filter(p => p.topicTags.includes(tag));
+        let totalCorrect = 0;
+        let totalIncorrect = 0;
+
+        for (const problem of topicProblems) {
+            const perf = performanceData[problem.id.toString()];
+            if (perf) {
+                totalCorrect += perf.correct;
+                totalIncorrect += perf.incorrect;
+            }
         }
-      }
-    }
+
+        const totalAnswered = totalCorrect + totalIncorrect;
+        if (totalAnswered > 0) {
+            const accuracy = (totalCorrect / totalAnswered) * 100;
+            if (accuracy < lowestAccuracy) {
+                lowestAccuracy = accuracy;
+                weakestTopic = tag;
+            }
+        }
+    });
+
     return weakestTopic;
   };
 
