@@ -12,6 +12,16 @@ interface Problem {
   difficulty: string;
 }
 
+interface LeetcodeProblem {
+  id: number;
+  slug: string;
+  title: string;
+  difficulty: string;
+  content: string;
+  topicTags: string[];
+  solution: string;
+}
+
 interface ProblemOfTheDayContextType {
   problemOfTheDay: Problem | null;
   isCompleted: boolean;
@@ -20,7 +30,7 @@ interface ProblemOfTheDayContextType {
 
 const ProblemOfTheDayContext = createContext<ProblemOfTheDayContextType | undefined>(undefined);
 
-const mappedProblems: Problem[] = leetcodeProblems.map((p: any) => ({
+const mappedProblems: Problem[] = (leetcodeProblems as LeetcodeProblem[]).map((p: any) => ({
   id: p.id,
   title: p.title,
   description: p.content,
