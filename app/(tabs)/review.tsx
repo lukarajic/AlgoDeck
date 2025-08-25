@@ -26,7 +26,7 @@ interface Problem {
   difficulty: string;
 }
 
-const mappedProblems: Problem[] = leetcodeProblemsData.map((p: LeetcodeProblem) => ({
+const mappedProblems: Problem[] = (leetcodeProblemsData as LeetcodeProblem[]).map((p: LeetcodeProblem) => ({
   id: p.id,
   title: p.title,
   description: p.content,
@@ -60,7 +60,7 @@ const ReviewScreen = () => {
           data={reviewProblems}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <Link href={{ pathname: '/(tabs)', params: { problemId: item.id, reviewMode: true } }} asChild>
+            <Link href={{ pathname: '/(tabs)', params: { problemId: item.id, reviewMode: 'true' } }} asChild>
               <TouchableOpacity style={styles.problemItem}>
                 <ThemedText style={styles.problemTitle}>{item.title}</ThemedText>
               </TouchableOpacity>

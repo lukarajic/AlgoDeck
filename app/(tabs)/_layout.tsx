@@ -25,7 +25,7 @@ export default function TabLayout() {
 
   const handlePracticeNow = () => {
     setModalVisible(false);
-    router.push({ pathname: '/(tabs)/', params: { potdMode: 'true' } });
+    router.push({ pathname: '/(tabs)', params: { potdMode: 'true' } });
   };
 
   return (

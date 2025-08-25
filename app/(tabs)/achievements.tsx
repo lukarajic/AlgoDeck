@@ -11,8 +11,9 @@ const AchievementsScreen = () => {
   const { achievements, unlockedAchievements } = useAchievements();
   const unlockedColor = useThemeColor({}, 'tint');
   const lockedColor = useThemeColor({}, 'text');
-  const unlockedBg = useThemeColor({}, 'highlight');
+  const unlockedBg = useThemeColor({}, 'tint');
   const lockedBg = useThemeColor({}, 'background');
+  const errorTextColor = useThemeColor({}, 'errorText');
 
   const renderItem = ({ item }: { item: Achievement }) => {
     const isUnlocked = unlockedAchievements.includes(item.id);
@@ -28,10 +29,10 @@ const AchievementsScreen = () => {
             opacity: isUnlocked ? 1 : 0.7,
           },
         ]}>
-        <Icon name={item.icon} size={30} color={isUnlocked ? unlockedColor : lockedColor} />
+        <Icon name={item.icon} size={30} color={isUnlocked ? lockedBg : lockedColor} />
         <View style={styles.achievementTextContainer}>
-          <ThemedText style={styles.title}>{item.title}</ThemedText>
-          <ThemedText style={styles.description}>{item.description}</ThemedText>
+          <ThemedText style={[styles.title, { color: isUnlocked ? errorTextColor : lockedColor }]}>{item.title}</ThemedText>
+          <ThemedText style={[styles.description, { color: isUnlocked ? errorTextColor : lockedColor }]}>{item.description}</ThemedText>
         </View>
       </View>
     );

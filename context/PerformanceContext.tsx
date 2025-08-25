@@ -21,7 +21,7 @@ interface Problem {
   difficulty: string;
 }
 
-const mappedProblems: Problem[] = (leetcodeProblemsData || []).filter(p => p).map((p: LeetcodeProblem) => ({
+const mappedProblems: Problem[] = (leetcodeProblemsData as LeetcodeProblem[] || []).filter(p => p).map((p: LeetcodeProblem) => ({
   id: p.id,
   title: p.title,
   description: p.content,
@@ -30,7 +30,26 @@ const mappedProblems: Problem[] = (leetcodeProblemsData || []).filter(p => p).ma
   difficulty: p.difficulty,
 }));
 
-const PerformanceContext = createContext(null);
+interface PerformanceEntry {
+  correct: number;
+  incorrect: number;
+  srsLevel: number;
+  nextReview: Date;
+}
+
+interface PerformanceData {
+  [problemId: string]: PerformanceEntry;
+}
+
+interface PerformanceContextType {
+  performanceData: PerformanceData;
+  updatePerformance: (problemId: number, isCorrect: boolean) => Promise<void>;
+  getReviewProblems: () => string[];
+  currentStreak: number;
+  resetPerformance: () => Promise<void>;
+}
+
+const PerformanceContext = createContext<PerformanceContextType | undefined>(undefined);
 
 const SRS_LEVELS = [
   { hours: 4 },
@@ -43,8 +62,8 @@ const SRS_LEVELS = [
   { hours: 16 * 7 * 24 },
 ];
 
-export const PerformanceProvider = ({ children }) => {
-  const [performanceData, setPerformanceData] = useState({});
+export const PerformanceProvider = ({ children }: { children: React.ReactNode }) => {
+  const [performanceData, setPerformanceData] = useState<PerformanceData>({});
   const [currentStreak, setCurrentStreak] = useState(0);
   const [lastPracticeDate, setLastPracticeDate] = useState<string | null>(null);
 
@@ -68,13 +87,7 @@ export const PerformanceProvider = ({ children }) => {
     loadPerformanceData();
   }, []);
 
-  const updatePerformance = async (problemId, isCorrect, reset = false) => {
-    if (reset) {
-      setPerformanceData({});
-      await AsyncStorage.removeItem('performanceData');
-      return;
-    }
-
+  const updatePerformance = async (problemId: number, isCorrect: boolean) => {
     const updatedData = { ...performanceData };
     if (!updatedData[problemId]) {
       updatedData[problemId] = { correct: 0, incorrect: 0, srsLevel: 0, nextReview: new Date() };
@@ -97,6 +110,15 @@ export const PerformanceProvider = ({ children }) => {
     setPerformanceData(updatedData);
     await AsyncStorage.setItem('performanceData', JSON.stringify(updatedData));
     await updateStreak();
+  };
+
+  const resetPerformance = async () => {
+    setPerformanceData({});
+    setCurrentStreak(0);
+    setLastPracticeDate(null);
+    await AsyncStorage.removeItem('performanceData');
+    await AsyncStorage.removeItem('currentStreak');
+    await AsyncStorage.removeItem('lastPracticeDate');
   };
 
   const updateStreak = async () => {
@@ -135,17 +157,32 @@ export const PerformanceProvider = ({ children }) => {
   }, [performanceData]);
 
   return (
-    <PerformanceContext.Provider value={{ performanceData, updatePerformance, getReviewProblems, currentStreak }}>
+    <PerformanceContext.Provider value={{ performanceData, updatePerformance, getReviewProblems, currentStreak, resetPerformance }}>
       {children}
     </PerformanceContext.Provider>
   );
 };
 
-export const usePerformance = () => useContext(PerformanceContext);
+export const usePerformance = () => {
+  const context = useContext(PerformanceContext);
+  if (!context) {
+    throw new Error('usePerformance must be used within a PerformanceProvider');
+  }
+  return context;
+};
 
 export const usePerformanceStats = () => {
   const { performanceData } = usePerformance();
-  const stats = {};
+  interface TopicStatsEntry {
+    correct: number;
+    incorrect: number;
+    accuracy: number;
+  }
+
+  interface PerformanceStats {
+    [topic: string]: TopicStatsEntry;
+  }
+  const stats: PerformanceStats = {};
   let totalCorrect = 0;
   let totalIncorrect = 0;
 

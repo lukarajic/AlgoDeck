@@ -6,11 +6,13 @@ import problems from '@/data/leetcode_problems.json';
 import { usePerformance } from '@/context/PerformanceContext';
 import { Problem } from '@/types';
 
+import { FontAwesome } from '@expo/vector-icons';
+
 export interface Achievement {
   id: string;
   title: string;
   description: string;
-  icon: string;
+  icon: keyof typeof FontAwesome.glyphMap;
 }
 
 interface AchievementsContextType {
@@ -28,7 +30,7 @@ export const AchievementsProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>([]);
 
   useEffect(() => {
-    setAchievements(achievementsData);
+    setAchievements(achievementsData as Achievement[]);
     loadUnlockedAchievements();
   }, []);
 

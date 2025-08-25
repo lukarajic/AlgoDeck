@@ -3,7 +3,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { useFirstTime } from '@/hooks/useFirstTime';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
-import { Button, FlatList, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Button, FlatList, StyleSheet, View, useWindowDimensions, ViewToken } from 'react-native';
 
 const onboardingSteps = [
   {
@@ -46,9 +46,11 @@ export default function OnboardingScreen() {
     }
   };
 
-  const onViewableItemsChanged = useRef(({ viewableItems }) => {
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
     if (viewableItems.length > 0) {
-      setCurrentIndex(viewableItems[0].index);
+      if (viewableItems[0].index !== null) {
+        setCurrentIndex(viewableItems[0].index);
+      }
     }
   }).current;
 

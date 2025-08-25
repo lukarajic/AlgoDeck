@@ -6,17 +6,31 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useTopic } from '../../context/TopicContext';
 import { usePerformance } from '../../context/PerformanceContext';
+import { useThemeColor } from '@/hooks/useThemeColor';
+
+interface LeetcodeProblem {
+  id: number;
+  slug: string;
+  title: string;
+  difficulty: string;
+  content: string;
+  topicTags: string[];
+  solution: string;
+}
 
 const TopicsScreen = () => {
   const { setSelectedTopic } = useTopic();
   const { performanceData } = usePerformance();
   const router = useRouter();
+  const errorColor = useThemeColor({}, 'error');
+  const errorTextColor = useThemeColor({}, 'errorText');
+  const iconColor = useThemeColor({}, 'icon');
 
-  const allTags = leetcodeProblemsData.flatMap(p => p.topicTags || []);
+  const allTags = (leetcodeProblemsData as LeetcodeProblem[]).flatMap((p: LeetcodeProblem) => p.topicTags || []);
   const topics = ['All', ...new Set(allTags)];
 
-  const getTopicStats = (topic) => {
-    const topicProblems = leetcodeProblemsData.filter(p => p.topicTags && p.topicTags.includes(topic));
+  const getTopicStats = (topic: string) => {
+    const topicProblems = (leetcodeProblemsData as LeetcodeProblem[]).filter((p: LeetcodeProblem) => p.topicTags && p.topicTags.includes(topic));
     const stats = { correct: 0, incorrect: 0 };
 
     for (const problem of topicProblems) {
@@ -34,7 +48,7 @@ const TopicsScreen = () => {
     router.push('/');
   };
 
-  const renderTopicItem = ({ item }) => {
+  const renderTopicItem = ({ item }: { item: string }) => {
     if (item === 'All') {
       return (
         <TouchableOpacity onPress={() => handleSelectTopic(item)}>
@@ -53,10 +67,10 @@ const TopicsScreen = () => {
 
     return (
       <TouchableOpacity onPress={() => handleSelectTopic(item)}>
-        <View style={[styles.topicItem, needsPractice && styles.needsPractice]}>
-          <ThemedText>{item}</ThemedText>
+        <View style={[styles.topicItem, needsPractice && { backgroundColor: errorColor, borderColor: errorTextColor, borderWidth: 1, borderRadius: 5 }]}>
+          <ThemedText style={needsPractice && { color: errorTextColor }}>{item}</ThemedText>
           {accuracy !== -1 && (
-            <ThemedText style={styles.accuracyText}>
+            <ThemedText style={[styles.accuracyText, { color: errorTextColor }]}>
               {accuracy.toFixed(0)}% Accuracy
             </ThemedText>
           )}
@@ -97,15 +111,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  needsPractice: {
-    backgroundColor: '#FFEBEE', // A light red background to highlight
-    borderColor: '#E57373',
-    borderWidth: 1,
-    borderRadius: 5,
-  },
   accuracyText: {
     fontStyle: 'italic',
-    color: '#555',
   },
 });
 

@@ -25,7 +25,25 @@ interface Problem {
   difficulty: string;
 }
 
-const mappedProblems: Problem[] = leetcodeProblemsData.map((p: LeetcodeProblem) => ({
+interface TopicStatsEntry {
+  correct: number;
+  incorrect: number;
+  total: number;
+}
+
+interface TopicStats {
+  [topic: string]: TopicStatsEntry;
+}
+
+interface TopicStatsItem {
+  topic: string;
+  correct: number;
+  incorrect: number;
+  total: number;
+  accuracy: number;
+}
+
+const mappedProblems: Problem[] = (leetcodeProblemsData as LeetcodeProblem[]).map((p: LeetcodeProblem) => ({
   id: p.id,
   title: p.title,
   description: p.content,
@@ -35,10 +53,10 @@ const mappedProblems: Problem[] = leetcodeProblemsData.map((p: LeetcodeProblem) 
 }));
 
 export default function ProgressScreen() {
-  const { performanceData, updatePerformance, currentStreak } = usePerformance();
+  const { performanceData, updatePerformance, currentStreak, resetPerformance } = usePerformance();
 
   const getTopicStats = () => {
-    const topicStats = {};
+    const topicStats: TopicStats = {};
 
     for (const problem of mappedProblems) {
       const problemId = problem.id;
@@ -74,7 +92,7 @@ export default function ProgressScreen() {
         },
         {
           text: 'Reset',
-          onPress: () => updatePerformance(null, null, true), // Special call to reset all data
+          onPress: () => resetPerformance(),
           style: 'destructive',
         },
       ]
@@ -83,7 +101,7 @@ export default function ProgressScreen() {
 
   const topicStats = getTopicStats();
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item }: { item: TopicStatsItem }) => (
     <View style={styles.itemContainer}>
       <ThemedText style={styles.topicName}>{item.topic}</ThemedText>
       <ThemedText>Correct: {item.correct}</ThemedText>

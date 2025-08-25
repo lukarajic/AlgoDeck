@@ -33,7 +33,7 @@ interface Problem {
   difficulty: string;
 }
 
-const mappedProblems: Problem[] = leetcodeProblemsData.filter(p => p).map((p: LeetcodeProblem) => ({
+const mappedProblems: Problem[] = (leetcodeProblemsData as LeetcodeProblem[]).filter(p => p).map((p: LeetcodeProblem) => ({
   id: p.id,
   title: p.title,
   description: p.content,
@@ -52,7 +52,7 @@ const PracticeScreen = () => {
   const [filteredProblems, setFilteredProblems] = useState<Problem[]>([]);
   const [cardIndex, setCardIndex] = useState(0);
   const [deckFinished, setDeckFinished] = useState(false);
-  const swiperRef = useRef(null);
+  const swiperRef = useRef<Swiper<Problem>>(null);
   const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const params = useLocalSearchParams();
@@ -136,7 +136,7 @@ const PracticeScreen = () => {
 
   const handleRestart = () => {
     if (isProblemOfTheDayMode) {
-        router.replace('/(tabs)/');
+        router.replace('/(tabs)');
     }
     setCardIndex(0);
     setDeckFinished(false);
@@ -186,7 +186,7 @@ const PracticeScreen = () => {
     }
   };
 
-  const toggleDifficulty = (difficulty: string) => {
+  const toggleDifficulty = (difficulty: 'Easy' | 'Medium' | 'Hard') => {
     setSelectedDifficulties((prev) =>
       prev.includes(difficulty) ? prev.filter((d) => d !== difficulty) : [...prev, difficulty]
     );
@@ -243,11 +243,11 @@ const PracticeScreen = () => {
         editable={!favoritesOnly && !reviewMode}
       />
       <View style={styles.difficultyContainer}>
-        {['Easy', 'Medium', 'Hard'].map((difficulty) => (
+        {(['Easy', 'Medium', 'Hard'] as ('Easy' | 'Medium' | 'Hard')[]) .map((difficulty: 'Easy' | 'Medium' | 'Hard') => (
           <Pressable
             key={difficulty}
-            onPressIn={() => handlePressIn(difficultyAnims[difficulty])}
-            onPressOut={() => handlePressOut(difficultyAnims[difficulty])}
+            onPressIn={() => handlePressIn(difficultyAnims[difficulty as 'Easy' | 'Medium' | 'Hard'])}
+            onPressOut={() => handlePressOut(difficultyAnims[difficulty as 'Easy' | 'Medium' | 'Hard'])}
             onPress={() => toggleDifficulty(difficulty)}
             disabled={favoritesOnly || reviewMode}
           >

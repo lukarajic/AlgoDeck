@@ -27,7 +27,7 @@ interface Problem {
   difficulty: string;
 }
 
-const mappedProblems: Problem[] = leetcodeProblemsData.map((p: LeetcodeProblem) => ({
+const mappedProblems: Problem[] = (leetcodeProblemsData as LeetcodeProblem[]).map((p: LeetcodeProblem) => ({
   id: p.id,
   title: p.title,
   description: p.content,
@@ -43,7 +43,7 @@ export default function FavoritesScreen() {
 
   const favoriteProblems = mappedProblems.filter((p) => favorites.includes(p.id));
 
-  const handleProblemPress = (problem) => {
+  const handleProblemPress = (problem: Problem) => {
     setSelectedTopic('Favorites');
     router.push({ pathname: '/(tabs)', params: { problemId: problem.id, favoritesOnly: 'true' } });
   };

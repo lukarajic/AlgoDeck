@@ -8,7 +8,7 @@ const TopicContext = createContext({
 
 export const useTopic = () => useContext(TopicContext);
 
-export const TopicProvider = ({ children }) => {
+export const TopicProvider = ({ children }: { children: React.ReactNode }) => {
   const [selectedTopic, setSelectedTopic] = useState('All');
 
   return (

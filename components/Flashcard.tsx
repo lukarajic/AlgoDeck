@@ -113,7 +113,7 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
     }
   };
 
-  const cardBackgroundColor = colorScheme === 'light' ? ['#ffffff', '#f0f0f0'] : ['#2c2c2c', '#1a1a1a'];
+  const cardBackgroundColor: [string, string] = colorScheme === 'light' ? ['#ffffff', '#f0f0f0'] : ['#2c2c2c', '#1a1a1a'];
 
   const markdownStyles = StyleSheet.create({
     body: {
@@ -138,6 +138,14 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
       color: colorScheme === 'light' ? '#000' : '#fff',
     },
     heading6: {
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    code_inline: {
+      backgroundColor: colorScheme === 'light' ? '#f0f0f0' : '#333',
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    pre: {
+      backgroundColor: colorScheme === 'light' ? '#f0f0f0' : '#333',
       color: colorScheme === 'light' ? '#000' : '#fff',
     },
     // Add more styles for other Markdown elements as needed
@@ -165,6 +173,14 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
       color: colorScheme === 'light' ? '#000' : '#fff',
     },
     heading6: {
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    code_inline: {
+      backgroundColor: colorScheme === 'light' ? '#f0f0f0' : '#333',
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    pre: {
+      backgroundColor: colorScheme === 'light' ? '#f0f0f0' : '#333',
       color: colorScheme === 'light' ? '#000' : '#fff',
     },
   });
