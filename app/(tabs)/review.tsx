@@ -66,6 +66,7 @@ const ReviewScreen = () => {
               </TouchableOpacity>
             </Link>
           )}
+          contentContainerStyle={{ paddingBottom: 100 }}
         />
       )}
     </ThemedView>

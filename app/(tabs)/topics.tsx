@@ -19,7 +19,7 @@ interface LeetcodeProblem {
 }
 
 const TopicsScreen = () => {
-  const { setSelectedTopic } = useTopic();
+  const { setSelectedTopic, setIsFavoritesMode } = useTopic();
   const { performanceData } = usePerformance();
   const router = useRouter();
   const errorColor = useThemeColor({}, 'error');
@@ -45,6 +45,7 @@ const TopicsScreen = () => {
 
   const handleSelectTopic = (topic: string) => {
     setSelectedTopic(topic);
+    setIsFavoritesMode(false);
     router.push('/');
   };
 

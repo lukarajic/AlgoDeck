@@ -45,7 +45,7 @@ const mappedProblems: Problem[] = (leetcodeProblemsData as LeetcodeProblem[]).fi
 
 
 const PracticeScreen = () => {
-  const { selectedTopic, setSelectedTopic } = useTopic();
+  const { selectedTopic, setSelectedTopic, isFavoritesMode } = useTopic();
   const { performanceData, updatePerformance, getReviewProblems } = usePerformance();
   const { favorites } = useFavorites();
   const { problemOfTheDay, markAsCompleted } = useProblemOfTheDay();
@@ -57,7 +57,7 @@ const PracticeScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const params = useLocalSearchParams();
   const router = useRouter();
-  const favoritesOnly = params.favoritesOnly === 'true';
+  
   const reviewMode = params.reviewMode === 'true';
   const isProblemOfTheDayMode = params.potdMode === 'true';
   const { colorScheme } = useTheme();
@@ -78,7 +78,7 @@ const PracticeScreen = () => {
     } else if (reviewMode) {
       const reviewProblemIds = getReviewProblems();
       newProblems = newProblems.filter(p => reviewProblemIds.includes(p.id.toString()));
-    } else if (favoritesOnly) {
+    } else if (isFavoritesMode) {
       newProblems = newProblems.filter((p) => favorites.includes(p.id));
     } else {
       if (selectedTopic !== 'All') {
@@ -95,14 +95,14 @@ const PracticeScreen = () => {
         p.title.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-
+    
     setFilteredProblems(newProblems);
     setCardIndex(0);
     setDeckFinished(false);
     if (swiperRef.current) {
       swiperRef.current.jumpToCardIndex(0);
     }
-  }, [selectedTopic, selectedDifficulties, searchQuery, favoritesOnly, reviewMode, isProblemOfTheDayMode, problemOfTheDay, favorites]);
+  }, [selectedTopic, selectedDifficulties, searchQuery, reviewMode, isProblemOfTheDayMode, problemOfTheDay, isFavoritesMode, favorites]);
 
   useEffect(() => {
     if (params.problemId) {
@@ -240,7 +240,7 @@ const PracticeScreen = () => {
         placeholderTextColor={Colors[colorScheme].icon}
         value={searchQuery}
         onChangeText={setSearchQuery}
-        editable={!favoritesOnly && !reviewMode}
+        editable={!isFavoritesMode && !reviewMode}
       />
       <View style={styles.difficultyContainer}>
         {(['Easy', 'Medium', 'Hard'] as ('Easy' | 'Medium' | 'Hard')[]) .map((difficulty: 'Easy' | 'Medium' | 'Hard') => (
@@ -249,13 +249,13 @@ const PracticeScreen = () => {
             onPressIn={() => handlePressIn(difficultyAnims[difficulty as 'Easy' | 'Medium' | 'Hard'])}
             onPressOut={() => handlePressOut(difficultyAnims[difficulty as 'Easy' | 'Medium' | 'Hard'])}
             onPress={() => toggleDifficulty(difficulty)}
-            disabled={favoritesOnly || reviewMode}
+            disabled={isFavoritesMode || reviewMode}
           >
             <Animated.View
               style={[
                 styles.difficultyButton,
                 selectedDifficulties.includes(difficulty) && styles.difficultyButtonSelected,
-                (favoritesOnly || reviewMode) && styles.disabledButton,
+                (isFavoritesMode || reviewMode) && styles.disabledButton,
                 { transform: [{ scale: difficultyAnims[difficulty] }] },
               ]}
             >
@@ -263,7 +263,7 @@ const PracticeScreen = () => {
                 style={[
                   styles.difficultyButtonText,
                   selectedDifficulties.includes(difficulty) && styles.difficultyButtonTextSelected,
-                  (favoritesOnly || reviewMode) && styles.disabledButtonText,
+                  (isFavoritesMode || reviewMode) && styles.disabledButtonText,
                 ]}
               >
                 {difficulty}
@@ -273,7 +273,7 @@ const PracticeScreen = () => {
         ))}
       </View>
       <ThemedText style={styles.topicText}>
-        {isProblemOfTheDayMode ? 'Problem of the Day' : reviewMode ? 'Reviewing Due Cards' : favoritesOnly ? 'Favorites' : `Topic: ${selectedTopic}`}
+        {isProblemOfTheDayMode ? 'Problem of the Day' : reviewMode ? 'Reviewing Due Cards' : isFavoritesMode ? 'Favorites' : `Topic: ${selectedTopic}`}
       </ThemedText>
       {filteredProblems.length === 0 ? (
         <ThemedView style={styles.noProblemsContainer}>
@@ -310,7 +310,7 @@ const PracticeScreen = () => {
             stackSeparation={15}
             animateCardOpacity
             verticalSwipe={false}
-            key={`${selectedTopic}-${selectedDifficulties.join('-')}-${favoritesOnly}-${favorites.length}-${reviewMode}-${isProblemOfTheDayMode}`}
+            key={`${selectedTopic}-${selectedDifficulties.join('-')}-${isFavoritesMode}-${reviewMode}-${isProblemOfTheDayMode}`}
           />
         </View>
       )}
@@ -344,11 +344,11 @@ const PracticeScreen = () => {
         </Pressable>
       </View>
       <TouchableOpacity
-        style={[styles.weakestButton, (favoritesOnly || reviewMode) && styles.disabledButton]}
+        style={[styles.weakestButton, (isFavoritesMode || reviewMode) && styles.disabledButton]}
         onPress={handlePracticeWeakest}
-        disabled={favoritesOnly || reviewMode}
+        disabled={isFavoritesMode || reviewMode}
       >
-        <ThemedText style={[styles.buttonText, (favoritesOnly || reviewMode) && styles.disabledButtonText]}>
+        <ThemedText style={[styles.buttonText, (isFavoritesMode || reviewMode) && styles.disabledButtonText]}>
           Practice Weakest Topic
         </ThemedText>
       </TouchableOpacity>

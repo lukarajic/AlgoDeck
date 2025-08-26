@@ -38,14 +38,15 @@ const mappedProblems: Problem[] = (leetcodeProblemsData as LeetcodeProblem[]).ma
 
 export default function FavoritesScreen() {
   const { favorites } = useFavorites();
-  const { setSelectedTopic } = useTopic();
+  const { setSelectedTopic, setIsFavoritesMode } = useTopic();
   const router = useRouter();
 
   const favoriteProblems = mappedProblems.filter((p) => favorites.includes(p.id));
 
   const handleProblemPress = (problem: Problem) => {
     setSelectedTopic('Favorites');
-    router.push({ pathname: '/(tabs)', params: { problemId: problem.id, favoritesOnly: 'true' } });
+    setIsFavoritesMode(true);
+    router.push({ pathname: '/(tabs)', params: { problemId: problem.id } });
   };
 
   const goToTopics = () => {
@@ -74,6 +75,7 @@ export default function FavoritesScreen() {
             <ThemedText style={styles.problemCategory}>{item.category}</ThemedText>
           </TouchableOpacity>
         )}
+        contentContainerStyle={{ paddingBottom: 100 }}
       />
     </ThemedView>
   );

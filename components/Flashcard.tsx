@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState } from 'react';
-import { Animated, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Animated, Modal, Pressable, ScrollView, StyleSheet, View, TouchableOpacity } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 
 interface FlashcardProps {
@@ -24,7 +24,8 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
   const [isSolutionModalVisible, setIsSolutionModalVisible] = useState(false);
   const flipAnimation = useRef(new Animated.Value(0)).current;
 
-  const handleToggleFavorite = () => {
+  const handleToggleFavorite = (event: any) => {
+    event.stopPropagation(); // Prevent flip from happening
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     toggleFavorite(problemId);
   };
@@ -187,61 +188,75 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
 
   return (
     <View style={styles.cardContainer}>
-      <Pressable onPress={flipCard} style={StyleSheet.absoluteFill} pointerEvents="box-none">
+      {/* Front Card */}
+      <TouchableOpacity activeOpacity={0.95} onPress={flipCard} style={StyleSheet.absoluteFill}>
         <Animated.View style={[styles.card, styles.cardFront, frontAnimatedStyle]}>
           <LinearGradient colors={cardBackgroundColor} style={styles.gradient}>
             <View style={styles.cardContent}>
               <View style={styles.headerContainer}>
-                <Pressable onPress={flipCard} style={styles.titleContainer}>
+                <View style={styles.titleSection}>
                   <ThemedText style={styles.title}>{title}</ThemedText>
-                </Pressable>
-                <Pressable onPress={handleToggleFavorite} style={styles.favoriteButton}>
-                  <Ionicons
-                    name={isFavorite(problemId) ? 'star' : 'star-outline'}
-                    size={28}
-                    color={isFavorite(problemId) ? '#FFD700' : '#ccc'}
-                  />
-                </Pressable>
+                </View>
               </View>
               <View style={styles.contentContainer}>
                 <Markdown style={markdownStyles}>
                   {getTruncatedText(description)}
                 </Markdown>
               </View>
-              <Pressable onPress={flipCard} style={[styles.badge, getDifficultyStyle(difficulty)]}>
+              <View style={[styles.badge, getDifficultyStyle(difficulty)]}>
                 <ThemedText style={styles.badgeText}>{difficulty}</ThemedText>
-              </Pressable>
+              </View>
             </View>
           </LinearGradient>
         </Animated.View>
+      </TouchableOpacity>
+
+      {/* Back Card */}
+      <TouchableOpacity activeOpacity={0.95} onPress={flipCard} style={StyleSheet.absoluteFill}>
         <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle]}>
           <LinearGradient colors={cardBackgroundColor} style={styles.gradient}>
             <View style={styles.cardContent}>
               <View style={styles.contentContainer}>
                 <ThemedText style={styles.solution}>{getTruncatedSolution(solution)}</ThemedText>
               </View>
-              <Pressable onPress={flipCard} style={styles.flipButton}>
+              <TouchableOpacity onPress={flipCard} style={styles.flipButton}>
                 <ThemedText style={styles.flipButtonText}>View Problem</ThemedText>
-              </Pressable>
+              </TouchableOpacity>
             </View>
           </LinearGradient>
         </Animated.View>
-      </Pressable>
+      </TouchableOpacity>
+
+      {/* Favorite button - completely separate from flip gestures */}
+      <TouchableOpacity 
+        onPress={handleToggleFavorite}
+        style={styles.favoriteButtonOverlay}
+        hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        activeOpacity={0.7}
+      >
+        <View style={styles.favoriteButtonBackground}>
+          <Ionicons
+            name={isFavorite(problemId) ? 'star' : 'star-outline'}
+            size={28}
+            color={isFavorite(problemId) ? '#FFD700' : '#ccc'}
+          />
+        </View>
+      </TouchableOpacity>
       
       {shouldShowReadMore(description) && !isFlipped && (
-        <Pressable onPress={handleToggleExpand} style={styles.expandButton}>
+        <TouchableOpacity onPress={handleToggleExpand} style={styles.expandButton}>
           <ThemedText style={styles.expandButtonText}>
             Read More
           </ThemedText>
-        </Pressable>
+        </TouchableOpacity>
       )}
 
       {shouldShowReadMoreSolution(solution) && isFlipped && (
-        <Pressable onPress={handleToggleSolutionExpand} style={styles.expandButton}>
+        <TouchableOpacity onPress={handleToggleSolutionExpand} style={styles.expandButton}>
           <ThemedText style={styles.expandButtonText}>
             Read More
           </ThemedText>
-        </Pressable>
+        </TouchableOpacity>
       )}
 
       {/* Modal for full description */}
@@ -259,13 +274,13 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
             {/* Modal Header */}
             <View style={styles.modalHeader}>
               <ThemedText style={styles.modalTitle}>{title}</ThemedText>
-              <Pressable onPress={handleCloseModal} style={styles.closeButton}>
+              <TouchableOpacity onPress={handleCloseModal} style={styles.closeButton}>
                 <Ionicons 
                   name="close" 
                   size={24} 
                   color={colorScheme === 'light' ? '#000' : '#fff'} 
                 />
-              </Pressable>
+              </TouchableOpacity>
             </View>
             
             {/* Modal Body */}
@@ -280,7 +295,7 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
             
             {/* Modal Footer */}
             <View style={styles.modalFooter}>
-              <Pressable 
+              <TouchableOpacity 
                 onPress={handleCloseModal} 
                 style={[
                   styles.modalCloseButton,
@@ -288,7 +303,7 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
                 ]}
               >
                 <ThemedText style={styles.modalCloseButtonText}>Close</ThemedText>
-              </Pressable>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -309,13 +324,13 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
             {/* Modal Header */}
             <View style={styles.modalHeader}>
               <ThemedText style={styles.modalTitle}>Solution</ThemedText>
-              <Pressable onPress={handleCloseSolutionModal} style={styles.closeButton}>
+              <TouchableOpacity onPress={handleCloseSolutionModal} style={styles.closeButton}>
                 <Ionicons 
                   name="close" 
                   size={24} 
                   color={colorScheme === 'light' ? '#000' : '#fff'} 
                 />
-              </Pressable>
+              </TouchableOpacity>
             </View>
             
             {/* Modal Body */}
@@ -333,7 +348,7 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
             
             {/* Modal Footer */}
             <View style={styles.modalFooter}>
-              <Pressable 
+              <TouchableOpacity 
                 onPress={handleCloseSolutionModal} 
                 style={[
                   styles.modalCloseButton,
@@ -341,7 +356,7 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
                 ]}
               >
                 <ThemedText style={styles.modalCloseButtonText}>Close</ThemedText>
-              </Pressable>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -387,18 +402,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
-    position: 'relative',
-    paddingHorizontal: 5, // Adjust as needed
+    paddingHorizontal: 40, // Leave space for the favorite button
+  },
+  titleSection: {
+    alignItems: 'center',
   },
   titleContainer: {
-    flex: 1,
     alignItems: 'center',
     paddingVertical: 5,
-    marginHorizontal: 40, // Ensure there's space for the button
   },
   title: {
     fontSize: 24,
@@ -422,6 +436,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: 'rgba(0, 123, 255, 0.3)',
+    zIndex: 1001,
   },
   expandButtonText: {
     color: '#007AFF',
@@ -471,12 +486,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  favoriteButton: {
+  favoriteButtonOverlay: {
     position: 'absolute',
-    right: 0,
-    top: '50%',
-    transform: [{ translateY: -19 }], // Adjust to vertically center with title
-    padding: 10, // Increase touchable area
+    top: 15,
+    right: 15,
+    zIndex: 1000,
+  },
+  favoriteButtonBackground: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 25,
+    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   // Modal styles
   modalOverlay: {
