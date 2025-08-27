@@ -70,6 +70,20 @@ const PracticeScreen = () => {
   };
 
   useEffect(() => {
+    if (isFavoritesMode) {
+      const favoriteProblems = mappedProblems.filter((p) => favorites.includes(p.id));
+      setFilteredProblems(favoriteProblems);
+      setCardIndex(0);
+      setDeckFinished(false);
+      if (swiperRef.current) {
+        swiperRef.current.jumpToCardIndex(0);
+      }
+    }
+  }, [isFavoritesMode, favorites]);
+
+  useEffect(() => {
+    if (isFavoritesMode) return;
+
     let newProblems = mappedProblems;
 
     if (isProblemOfTheDayMode) {
@@ -78,8 +92,6 @@ const PracticeScreen = () => {
     } else if (reviewMode) {
       const reviewProblemIds = getReviewProblems();
       newProblems = newProblems.filter(p => reviewProblemIds.includes(p.id.toString()));
-    } else if (isFavoritesMode) {
-      newProblems = newProblems.filter((p) => favorites.includes(p.id));
     } else {
       if (selectedTopic !== 'All') {
         newProblems = newProblems.filter((p) => p.topicTags.includes(selectedTopic));
@@ -102,7 +114,7 @@ const PracticeScreen = () => {
     if (swiperRef.current) {
       swiperRef.current.jumpToCardIndex(0);
     }
-  }, [selectedTopic, selectedDifficulties, searchQuery, reviewMode, isProblemOfTheDayMode, problemOfTheDay, isFavoritesMode, favorites]);
+  }, [selectedTopic, selectedDifficulties, searchQuery, reviewMode, isProblemOfTheDayMode, problemOfTheDay]);
 
   useEffect(() => {
     if (params.problemId) {
