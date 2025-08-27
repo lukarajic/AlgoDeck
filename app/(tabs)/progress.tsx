@@ -53,7 +53,7 @@ const mappedProblems: Problem[] = (leetcodeProblemsData as LeetcodeProblem[]).ma
 }));
 
 export default function ProgressScreen() {
-  const { performanceData, updatePerformance, currentStreak, resetPerformance } = usePerformance();
+  const { performanceData, currentStreak, resetPerformance } = usePerformance();
 
   const getTopicStats = () => {
     const topicStats: TopicStats = {};

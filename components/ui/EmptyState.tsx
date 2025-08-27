@@ -1,7 +1,6 @@
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { Colors } from '@/constants/Colors';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import React from 'react';
 import { Button, StyleSheet, View } from 'react-native';

@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState } from 'react';
-import { Animated, Modal, Pressable, ScrollView, StyleSheet, View, TouchableOpacity } from 'react-native';
+import { Animated, Modal, ScrollView, StyleSheet, View, TouchableOpacity } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 
 interface FlashcardProps {

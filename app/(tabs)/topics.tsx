@@ -24,7 +24,6 @@ const TopicsScreen = () => {
   const router = useRouter();
   const errorColor = useThemeColor({}, 'error');
   const errorTextColor = useThemeColor({}, 'errorText');
-  const iconColor = useThemeColor({}, 'icon');
 
   const allTags = (leetcodeProblemsData as LeetcodeProblem[]).flatMap((p: LeetcodeProblem) => p.topicTags || []);
   const topics = ['All', ...new Set(allTags)];

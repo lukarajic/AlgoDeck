@@ -5,7 +5,7 @@ import { useFavorites } from '@/context/FavoritesContext';
 import { useTheme } from '@/context/ThemeContext';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Alert, Animated, Pressable, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import Flashcard from '../../components/Flashcard';
@@ -81,7 +81,7 @@ const PracticeScreen = () => {
     }
   }, [isFavoritesMode, favorites]);
 
-  useEffect(() => {
+  const updateFilteredProblems = useCallback(() => {
     if (isFavoritesMode) return;
 
     let newProblems = mappedProblems;
@@ -109,12 +109,28 @@ const PracticeScreen = () => {
     }
     
     setFilteredProblems(newProblems);
+  }, [
+    isFavoritesMode,
+    isProblemOfTheDayMode,
+    reviewMode,
+    problemOfTheDay,
+    getReviewProblems,
+    selectedTopic,
+    selectedDifficulties,
+    searchQuery,
+  ]);
+
+  useEffect(() => {
+    updateFilteredProblems();
+  }, [updateFilteredProblems]);
+
+  useEffect(() => {
     setCardIndex(0);
     setDeckFinished(false);
     if (swiperRef.current) {
       swiperRef.current.jumpToCardIndex(0);
     }
-  }, [selectedTopic, selectedDifficulties, searchQuery, reviewMode, isProblemOfTheDayMode, problemOfTheDay]);
+  }, [selectedTopic]);
 
   useEffect(() => {
     if (params.problemId) {
