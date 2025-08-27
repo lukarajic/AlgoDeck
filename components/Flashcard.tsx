@@ -217,7 +217,7 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
           <LinearGradient colors={cardBackgroundColor} style={styles.gradient}>
             <View style={styles.cardContent}>
               <View style={styles.contentContainer}>
-                <ThemedText style={styles.solution}>{getTruncatedSolution(solution)}</ThemedText>
+                <Markdown style={markdownStyles}>{getTruncatedSolution(solution)}</Markdown>
               </View>
               <TouchableOpacity onPress={flipCard} style={styles.flipButton}>
                 <ThemedText style={styles.flipButtonText}>View Problem</ThemedText>
@@ -338,12 +338,9 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
               style={styles.modalScrollView}
               showsVerticalScrollIndicator={false}
             >
-              <ThemedText style={[
-                styles.modalSolutionText,
-                { color: colorScheme === 'light' ? '#000' : '#fff' }
-              ]}>
+              <Markdown style={modalMarkdownStyles}>
                 {solution}
-              </ThemedText>
+              </Markdown>
             </ScrollView>
             
             {/* Modal Footer */}
