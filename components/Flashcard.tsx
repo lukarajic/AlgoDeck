@@ -505,12 +505,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
   },
   modalContent: {
-    width: '100%',
+    width: '90%',
     maxHeight: '80%',
     borderRadius: 20,
+    padding: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -521,7 +521,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
     paddingBottom: 10,
   },
   modalTitle: {
@@ -529,17 +528,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     flex: 1,
     textAlign: 'center',
-    paddingRight: 34, // Account for close button width
+    marginLeft: 34, // Account for close button width
   },
   closeButton: {
     padding: 5,
   },
   modalScrollView: {
-    paddingHorizontal: 20,
     maxHeight: '70%',
   },
   modalFooter: {
-    padding: 20,
     paddingTop: 15,
     alignItems: 'center',
   },
