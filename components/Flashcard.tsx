@@ -125,7 +125,23 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
   const markdownStyles = StyleSheet.create({
     body: {
       fontSize: 18,
-      textAlign: 'center',
+      lineHeight: 24,
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    list_item: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      marginBottom: 8,
+    },
+    bullet_list_icon: {
+      marginRight: 8,
+      fontSize: 16,
+      lineHeight: 24,
+      color: colorScheme === 'light' ? '#000' : '#fff',
+    },
+    ordered_list_icon: {
+      marginRight: 8,
+      fontSize: 16,
       lineHeight: 24,
       color: colorScheme === 'light' ? '#000' : '#fff',
     },
@@ -469,7 +485,6 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     justifyContent: 'center',
-    alignItems: 'center',
     marginVertical: 10,
   },
   bottomSection: {
