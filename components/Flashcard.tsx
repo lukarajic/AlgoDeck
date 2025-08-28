@@ -30,9 +30,13 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
     toggleFavorite(problemId);
   };
 
-  const getTruncatedText = (text: string) => {
-    const paragraphs = text.split('\n\n');
-    return paragraphs[0];
+  const getTruncatedText = (description: string) => {
+    const paragraphs = description.split('\n\n');
+    const text = paragraphs[0];
+    if (text.length <= 200) return text;
+    const truncated = text.substring(0, 200);
+    const lastSpace = truncated.lastIndexOf(' ');
+    return lastSpace > 150 ? truncated.substring(0, lastSpace) + '...' : truncated + '...';
   };
 
   const getTruncatedSolution = (text: string) => {
@@ -52,7 +56,8 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
     return text.length > 200;
   };
 
-  const handleToggleExpand = () => {
+  const handleToggleExpand = (event: any) => {
+    event.stopPropagation(); // Prevent flip from happening
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsModalVisible(true);
   };
@@ -62,7 +67,8 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
     setIsModalVisible(false);
   };
 
-  const handleToggleSolutionExpand = () => {
+  const handleToggleSolutionExpand = (event: any) => {
+    event.stopPropagation(); // Prevent flip from happening
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsSolutionModalVisible(true);
   };
@@ -203,13 +209,70 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
                   {getTruncatedText(description)}
                 </Markdown>
               </View>
-              <View style={[styles.badge, getDifficultyStyle(difficulty)]}>
-                <ThemedText style={styles.badgeText}>{difficulty}</ThemedText>
+              
+              {/* Bottom section with difficulty badge only */}
+              <View style={styles.bottomSection}>
+                {/* Empty container to maintain layout structure */}
               </View>
             </View>
           </LinearGradient>
         </Animated.View>
       </TouchableOpacity>
+
+      {/* Front card difficulty badge - separate positioning */}
+      {!isFlipped && (
+        <View style={styles.frontDifficultyBadge}>
+          <View style={[styles.badge, getDifficultyStyle(difficulty)]}>
+            <ThemedText style={styles.badgeText}>{difficulty}</ThemedText>
+          </View>
+        </View>
+      )}
+
+      {/* Back card View Problem button - separate positioning */}
+      {isFlipped && (
+        <TouchableOpacity 
+          onPress={flipCard}
+          style={styles.backViewProblemButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          activeOpacity={0.7}
+        >
+          <View style={styles.flipButton}>
+            <ThemedText style={styles.flipButtonText}>View Problem</ThemedText>
+          </View>
+        </TouchableOpacity>
+      )}
+
+      {/* Back card Read More button - separate positioning */}
+      {shouldShowReadMoreSolution(solution) && isFlipped && (
+        <TouchableOpacity 
+          onPress={handleToggleSolutionExpand}
+          style={styles.backReadMoreButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          activeOpacity={0.7}
+        >
+          <View style={styles.expandButton}>
+            <ThemedText style={styles.expandButtonText}>
+              Read More
+            </ThemedText>
+          </View>
+        </TouchableOpacity>
+      )}
+
+      {/* Front card Read More button - separate from flip gesture */}
+      {shouldShowReadMore(description) && !isFlipped && (
+        <TouchableOpacity 
+          onPress={handleToggleExpand}
+          style={styles.frontReadMoreButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          activeOpacity={0.7}
+        >
+          <View style={styles.expandButton}>
+            <ThemedText style={styles.expandButtonText}>
+              Read More
+            </ThemedText>
+          </View>
+        </TouchableOpacity>
+      )}
 
       {/* Back Card */}
       <TouchableOpacity activeOpacity={0.95} onPress={flipCard} style={StyleSheet.absoluteFill}>
@@ -219,9 +282,11 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
               <View style={styles.contentContainer}>
                 <Markdown style={markdownStyles}>{getTruncatedSolution(solution)}</Markdown>
               </View>
-              <TouchableOpacity onPress={flipCard} style={styles.flipButton}>
-                <ThemedText style={styles.flipButtonText}>View Problem</ThemedText>
-              </TouchableOpacity>
+              
+              {/* Bottom section - empty for absolute positioning */}
+              <View style={styles.bottomSection}>
+                {/* Empty container to maintain layout structure */}
+              </View>
             </View>
           </LinearGradient>
         </Animated.View>
@@ -242,22 +307,6 @@ const Flashcard = ({ problemId, title, description, solution, difficulty }: Flas
           />
         </View>
       </TouchableOpacity>
-      
-      {shouldShowReadMore(description) && !isFlipped && (
-        <TouchableOpacity onPress={handleToggleExpand} style={styles.expandButton}>
-          <ThemedText style={styles.expandButtonText}>
-            Read More
-          </ThemedText>
-        </TouchableOpacity>
-      )}
-
-      {shouldShowReadMoreSolution(solution) && isFlipped && (
-        <TouchableOpacity onPress={handleToggleSolutionExpand} style={styles.expandButton}>
-          <ThemedText style={styles.expandButtonText}>
-            Read More
-          </ThemedText>
-        </TouchableOpacity>
-      )}
 
       {/* Modal for full description */}
       <Modal
@@ -423,17 +472,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 10,
   },
+  bottomSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 15,
+    width: '100%',
+  },
   expandButton: {
-    position: 'absolute',
-    bottom: 80,
-    alignSelf: 'center',
     paddingVertical: 8,
     paddingHorizontal: 16,
     backgroundColor: 'rgba(0, 123, 255, 0.15)',
     borderRadius: 20,
     borderWidth: 1,
     borderColor: 'rgba(0, 123, 255, 0.3)',
-    zIndex: 1001,
+    minHeight: 36, // Match badge height
+    justifyContent: 'center',
   },
   expandButtonText: {
     color: '#007AFF',
@@ -447,10 +501,11 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   badge: {
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    borderRadius: 15,
-    marginVertical: 5,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    minHeight: 36, // Match expandButton height
+    justifyContent: 'center',
   },
   easyBadge: {
     backgroundColor: '#4CAF50', // Green
@@ -472,11 +527,12 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   flipButton: {
-    marginTop: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     backgroundColor: '#007AFF',
-    borderRadius: 25,
+    borderRadius: 20,
+    minHeight: 36, // Match expandButton height
+    justifyContent: 'center',
   },
   flipButtonText: {
     color: '#fff',
@@ -487,6 +543,30 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 15,
     right: 15,
+    zIndex: 1000,
+  },
+  frontDifficultyBadge: {
+    position: 'absolute',
+    bottom: 25,
+    left: 20, // Move further to the left
+    zIndex: 1000,
+  },
+  frontReadMoreButton: {
+    position: 'absolute',
+    bottom: 25,
+    right: 20, // Move further to the right
+    zIndex: 1000,
+  },
+  backViewProblemButton: {
+    position: 'absolute',
+    bottom: 25,
+    left: 20, // Position on the left side like difficulty badge
+    zIndex: 1000,
+  },
+  backReadMoreButton: {
+    position: 'absolute',
+    bottom: 25,
+    right: 20, // Position on the right side like front read more
     zIndex: 1000,
   },
   favoriteButtonBackground: {
