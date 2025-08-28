@@ -484,7 +484,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     width: '100%',
-    justifyContent: 'center',
+    paddingTop: 30, // Added padding to ensure consistent spacing
     marginVertical: 10,
   },
   bottomSection: {
