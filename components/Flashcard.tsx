@@ -629,7 +629,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   modalScrollView: {
-    maxHeight: '70%',
+    maxHeight: '85%',
   },
   modalFooter: {
     paddingTop: 15,
