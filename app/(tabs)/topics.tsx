@@ -26,7 +26,7 @@ const TopicsScreen = () => {
   const errorTextColor = useThemeColor({}, 'errorText');
 
   const allTags = (leetcodeProblemsData as LeetcodeProblem[]).flatMap((p: LeetcodeProblem) => p.topicTags || []);
-  const topics = ['All', ...new Set(allTags)];
+  const topics = ['All', ...[...new Set(allTags)].sort()];
 
   const getTopicStats = (topic: string) => {
     const topicProblems = (leetcodeProblemsData as LeetcodeProblem[]).filter((p: LeetcodeProblem) => p.topicTags && p.topicTags.includes(topic));

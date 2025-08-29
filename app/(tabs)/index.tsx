@@ -126,7 +126,6 @@ const PracticeScreen = () => {
     isProblemOfTheDayMode,
     reviewMode,
     problemOfTheDay,
-    getReviewProblems,
     selectedTopic,
     selectedDifficulties,
     searchQuery,

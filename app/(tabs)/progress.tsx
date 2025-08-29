@@ -16,14 +16,7 @@ interface LeetcodeProblem {
   solution: string;
 }
 
-interface Problem {
-  id: number;
-  title: string;
-  description: string;
-  solution: string;
-  category: string;
-  difficulty: string;
-}
+
 
 interface TopicStatsEntry {
   correct: number;
@@ -43,42 +36,43 @@ interface TopicStatsItem {
   accuracy: number;
 }
 
-const mappedProblems: Problem[] = (leetcodeProblemsData as LeetcodeProblem[]).map((p: LeetcodeProblem) => ({
-  id: p.id,
-  title: p.title,
-  description: p.content,
-  solution: p.solution,
-  category: p.topicTags && p.topicTags.length > 0 ? p.topicTags[0] : 'Unknown',
-  difficulty: p.difficulty,
-}));
-
 export default function ProgressScreen() {
   const { performanceData, currentStreak, resetPerformance } = usePerformance();
 
   const getTopicStats = () => {
     const topicStats: TopicStats = {};
+    const problems = leetcodeProblemsData as LeetcodeProblem[];
 
-    for (const problem of mappedProblems) {
+    // Initialize stats for all topics to ensure they appear in the list
+    const allTopics = new Set(problems.flatMap(p => p.topicTags || []));
+    allTopics.forEach(topic => {
+      topicStats[topic] = { correct: 0, incorrect: 0, total: 0 };
+    });
+
+    for (const problem of problems) {
       const problemId = problem.id;
-      const category = problem.category;
       const performance = performanceData[problemId];
+      const problemTopics = problem.topicTags || [];
 
-      if (!topicStats[category]) {
-        topicStats[category] = { correct: 0, incorrect: 0, total: 0 };
+      for (const topic of problemTopics) {
+        if (performance) {
+          topicStats[topic].correct += performance.correct;
+          topicStats[topic].incorrect += performance.incorrect;
+        }
+        topicStats[topic].total++;
       }
-
-      if (performance) {
-        topicStats[category].correct += performance.correct;
-        topicStats[category].incorrect += performance.incorrect;
-      }
-      topicStats[category].total++;
     }
 
-    return Object.entries(topicStats).map(([topic, stats]) => ({
-      topic,
-      ...stats,
-      accuracy: stats.correct > 0 ? (stats.correct / (stats.correct + stats.incorrect)) * 100 : 0,
-    }));
+    return Object.entries(topicStats)
+      .map(([topic, stats]) => ({
+        topic,
+        ...stats,
+        accuracy: stats.correct + stats.incorrect > 0
+            ? (stats.correct / (stats.correct + stats.incorrect)) * 100
+            : 0,
+      }))
+      .filter(stats => stats.total > 0) // Only show topics that have problems
+      .sort((a, b) => a.topic.localeCompare(b.topic));
   };
 
   const handleResetProgress = () => {
