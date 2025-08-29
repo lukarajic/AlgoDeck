@@ -50,6 +50,8 @@ const PracticeScreen = () => {
   const { favorites } = useFavorites();
   const { problemOfTheDay, markAsCompleted } = useProblemOfTheDay();
   const [filteredProblems, setFilteredProblems] = useState<Problem[]>([]);
+  const [reviewProblems, setReviewProblems] = useState<Problem[]>([]);
+  const reviewListInitialized = useRef(false);
   const [cardIndex, setCardIndex] = useState(0);
   const [deckFinished, setDeckFinished] = useState(false);
   const swiperRef = useRef<Swiper<Problem>>(null);
@@ -68,6 +70,17 @@ const PracticeScreen = () => {
     Medium: useRef(new Animated.Value(1)).current,
     Hard: useRef(new Animated.Value(1)).current,
   };
+
+  useEffect(() => {
+    if (reviewMode && !reviewListInitialized.current) {
+      const reviewProblemIds = getReviewProblems();
+      const initialReviewProblems = mappedProblems.filter(p => reviewProblemIds.includes(p.id.toString()));
+      setReviewProblems(initialReviewProblems);
+      reviewListInitialized.current = true;
+    } else if (!reviewMode) {
+      reviewListInitialized.current = false; // Reset when leaving review mode
+    }
+  }, [reviewMode, getReviewProblems]);
 
   useEffect(() => {
     if (isFavoritesMode) {
@@ -90,8 +103,7 @@ const PracticeScreen = () => {
         const potdProblem = mappedProblems.find(p => p.id === problemOfTheDay?.id);
         newProblems = potdProblem ? [potdProblem] : [];
     } else if (reviewMode) {
-      const reviewProblemIds = getReviewProblems();
-      newProblems = newProblems.filter(p => reviewProblemIds.includes(p.id.toString()));
+      newProblems = reviewProblems;
     } else {
       if (selectedTopic !== 'All') {
         newProblems = newProblems.filter((p) => p.topicTags.includes(selectedTopic));
@@ -118,6 +130,7 @@ const PracticeScreen = () => {
     selectedTopic,
     selectedDifficulties,
     searchQuery,
+    reviewProblems,
   ]);
 
   useEffect(() => {
@@ -125,12 +138,13 @@ const PracticeScreen = () => {
   }, [updateFilteredProblems]);
 
   useEffect(() => {
+    // When filters change, reset the deck to the first card
     setCardIndex(0);
     setDeckFinished(false);
     if (swiperRef.current) {
       swiperRef.current.jumpToCardIndex(0);
     }
-  }, [selectedTopic]);
+  }, [selectedTopic, selectedDifficulties, searchQuery, reviewMode, isProblemOfTheDayMode]);
 
   useEffect(() => {
     if (params.problemId) {
